@@ -12,7 +12,6 @@ new_graph(G) :-
 % delete_graph(G) - rimuove G dalla base di conoscenza
 
 delete_graph(G) :-
-    graph(G),
-    retract(G), !.
+    retract(graph(G)), !.
     
     
