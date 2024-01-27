@@ -13,10 +13,11 @@ new_graph(G) :-
 % delete_graph(G) - rimuove il grafo G dalla base di conoscenza
 
 delete_graph(G) :-
-    retract(graph(G)), !.
+    retract(graph(G)).
     
-% new_vertex(G, V) - crea un nuovo verice V nel grafo G   
+% new_vertex(G, V) - crea un nuovo vertice V nel grafo G   
 new_vertex(G, V) :-
     graph(G),
     atom(V),
+    not(vertex(G, V)),
     assert(vertex(G, V)).
