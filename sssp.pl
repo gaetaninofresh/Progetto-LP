@@ -126,5 +126,10 @@ insert(H, K, V) :-
 % find_insert_pos(H, K, V) - trova la posizione P nell 'heap H 
 %    in cui inserire V con chiave K 
 
-find_insert_pos(H, K, V, I) :-
-    heap_entry(H, 1, Hk, _)
+find_insert_pos(H, K, V, I, R) :-
+    heap_entry(H, In, Kn, _),
+    K @< Kn,
+    R = I.
+
+
+
