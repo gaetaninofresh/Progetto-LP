@@ -87,13 +87,18 @@ list_graph(G) :-
 
 % MINHEAP
 
-% new_heap(H) - crea un nuovo heap H
+% new_heap(H) - crea un nuovo heap H e lo inserisce nella base di conoscenza
 % TODO: capire che vuol dire "mantiene la dimensione corrente dello heap nel
 % secondo argomento."
 
 new_heap(H) :- heap(H, _S), !.
-
 new_heap(H) :- assert(heap(H, 0)), !.
+
+% delete_heap(H) - elimina l'heap H dalla base di conoscenza
+
+delete_heap(H) :-
+    retract(heap(H, _)).
+    % TODO: rimuovere tutte le entries
 
 % heap_size(H) - ritorna true se l'heap H ha dimensione S 
 
