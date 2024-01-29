@@ -3,6 +3,8 @@
 :- dynamic vertex/2.
 :- dynamic edge/4.
 
+
+% GRAPH
 % new_graph(G) - aggiunge il grafo G alla base di conoscenza
 
 new_graph(G) :- 
@@ -81,3 +83,7 @@ list_graph(G) :-
     graph(G),
     list_vertices(G),
     list_edges(G).
+
+% MINHEAP
+
+%new_heap(H) - crea un nuovo heap H
