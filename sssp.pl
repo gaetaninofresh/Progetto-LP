@@ -2,6 +2,7 @@
 :- dynamic graph/1.
 :- dynamic vertex/2.
 :- dynamic edge/4.
+:- dynamic heap/2.
 
 
 % GRAPH
@@ -86,4 +87,24 @@ list_graph(G) :-
 
 % MINHEAP
 
-%new_heap(H) - crea un nuovo heap H
+% new_heap(H) - crea un nuovo heap H
+% TODO: capire che vuol dire "mantiene la dimensione corrente dello heap nel
+% secondo argomento."
+
+new_heap(H) :- heap(H, _S), !.
+
+new_heap(H) :- assert(heap(H, 0)), !.
+
+% heap_size(H) - ritorna true se l'heap H ha dimensione S 
+
+heap_size(H, S) :- 
+    heap(H, S).
+
+% empty(H) - ritorna true se l'heap H è vuoto
+empty(H) :-
+    heap(H, 0).
+
+% not_empty(H) - ritorna true se l'heap H non è vuoto
+
+not_empty(H) :-
+    not(heap(H, 0)).
