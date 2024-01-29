@@ -103,6 +103,16 @@ heap_size(H, S) :-
 empty(H) :-
     heap(H, 0).
 
+
+
+
+
+delete_graph(G) :-
+    graph(G),
+    retractall(edge(G, _, _, _)),
+    retractall(vertex(G, _)),
+    retractall(graph(G)).
+
 % not_empty(H) - ritorna true se l'heap H non è vuoto
 not_empty(H) :-
     not(heap(H, 0)).
