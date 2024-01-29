@@ -76,7 +76,7 @@ list_edges(G) :-
     graph(G),
     listing(edge(G, U, V, Weight)).
 
-% Stampa una lista dei vertici e degli archi del grafo G.
+% list_graph(G) - Stampa una lista dei vertici e degli archi del grafo G.
 list_graph(G) :-
     graph(G),
     list_vertices(G),
