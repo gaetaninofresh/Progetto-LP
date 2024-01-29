@@ -39,10 +39,6 @@ vertices(G, Vs) :-
 list_vertices(G) :-
     graph(G),
     listing(vertex(G, V)).
-<<<<<<< Updated upstream
-=======
-
-    
 
 % new_edge(G, U, V, Weight) - Aggiunge un arco del grafo G 
 %   alla base dati Prolog.
@@ -79,4 +75,3 @@ neighbors(G, V, Ns) :-
 list_edges(G) :-
     graph(G),
     listing(edge(G, U, V, Weight)).
->>>>>>> Stashed changes
