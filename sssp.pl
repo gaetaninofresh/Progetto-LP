@@ -53,11 +53,11 @@ new_edge(G, U, V) :-
 % edges(G, Es) - Questo predicato è vero quando Es è una lista di tutti
 %   gli archi presenti in G.
 edges(G, Es) :-
-    setof(V, vertex(G,V), Es), !.
+    setof(V, edge(G,_U, _V, _W), Es), !.
 
 edges(G, Es) :-
     is_list(Es),
-    setof(V, vertex(G,V), L),
+    setof(V, edge(G,_U, _V, _W), L),
     permutation(L, Es), !.
 
 % neighbors(G, V, Ns) - Questo predicato è vero quando V è un vertice di G e 
