@@ -81,6 +81,18 @@ list_graph(G) :-
     list_vertices(G),
     list_edges(G).
 
+% modify_key(H, NewK, OldK, V) - è vero quando la chiave OldKey 
+% (associata al valore V) è sostituita
+% da NewKey
+
+modify_key(H, NewK, NewK, _V).
+
+modify_key(H, NewK, OldK, V) :-
+    retract(heap_entry(H, P, OldK, V)),
+    assert(heap_entry(H, P, NewK, V)),
+    heap(H, S),
+    heapify(H, S).
+
 % MINHEAP
 
 % new_heap(H) - crea un nuovo heap H e lo inserisce nella base di conoscenza
@@ -210,8 +222,8 @@ swap(H, I, Ip) :-
     insert(a, 5, m),
     insert(a, 4, n),
     insert(a, 4, p),
-    list_heap(a)
+    list_heap(a),
     %extract(a, 1, y),
-    %list_heap(a)
+    list_heap(a)
     )
 ).
