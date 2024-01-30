@@ -40,7 +40,7 @@ vertices(G, Vs) :-
     %TODO: rimuovere stampa ":- dynamic vertex/2"
 list_vertices(G) :-
     graph(G),
-    listing(vertex(G, V)).
+    listing(vertex(G, _V)).
 
 % new_edge(G, U, V, Weight) - Aggiunge un arco del grafo G 
 %   alla base dati Prolog.
@@ -73,7 +73,7 @@ neighbors(G, V, Ns) :-
 %   una lista degli archi del grafo G
 list_edges(G) :-
     graph(G),
-    listing(edge(G, U, V, Weight)).
+    listing(edge(G, _U, _V, _Weight)).
 
 % list_graph(G) - Stampa una lista dei vertici e degli archi del grafo G.
 list_graph(G) :-
@@ -112,24 +112,79 @@ head(H, K, V) :-
     heap_entry(H, 1, K, V).
 
 % insert(H, K, V) -  è vero quando l’elemento V è inserito 
-% nello heap H con chiave K
+% nello heap H con chiave K; nel caso in cui la chiave sia già presente 
+% sostituisce il vecchio valore 
 
-% caso heap vuoto
+
 insert(H, K, V) :-
-    empty(H),
-    assert(heap_entry(H, 1, K, V)),
-    retract(heap(H, 0)),
-    assert(heap(H,1)).
+    retract(heap_entry(H, P, K, _Oldv)),
+    assert(heap_entry(H, P, K, V)), !.
+
+insert(H, K, V) :-
+    % incrementa la dimensione dell'heap 
+    heap_size(H, S),
+    retract(heap(H, S)),
+    NewS is S + 1,
+    assert(heap(H, NewS)),
+    assert(heap_entry(H, NewS, K, V)),
+    heapify(H, NewS).
+
+list_heap(H) :-
+    listing(heap_entry(H, _I, _K, _V)).
 
 % PREDICATI AGGIUNTIVI
 
-% find_insert_pos(H, K, V) - trova la posizione P nell 'heap H 
-%    in cui inserire V con chiave K 
+% get_parent_index(I, Pi) - unifica Pi col valore della posizione del nodo 
+% padre del nodo in posizione I
 
-find_insert_pos(H, K, V, I, R) :-
-    heap_entry(H, In, Kn, _),
-    K @< Kn,
-    R = I.
+get_parent_index(I, Pi) :-
+    I =< 1,
+    Pi = 1, !. 
+
+get_parent_index(I, Pi) :-
+    I > 1,
+    Pi is I / 2.
 
 
+% implementazione delll'algoritmo di heapify
+heapify(H, 0) :- fail.
+heapify(H, 1) :- true.
 
+heapify(H, I) :-
+    get_parent_index(I, Ip),
+    heap_entry(H, I, K, _V),
+    heap_entry(H, Ip, Pk, _Vp),
+    K > Pk.
+
+heapify(H, I) :-
+    get_parent_index(I, Ip),
+    heap_entry(H, I, K, _V),
+    heap_entry(H, Ip, Pk, _Vp),
+    K < Pk,
+    swap(H, I, Ip),
+    heapify(H, Ip).
+
+% scambia i nodi nell'heap H con indice I e IP 
+swap(H, I, Ip) :-
+    heap_entry(H, I, K, V),
+    heap_entry(H, Ip, Kp, Vp),
+
+    retract(heap_entry(H, I, K, V)),
+    retract(heap_entry(H, Ip, Kp, Vp)),
+    
+    assert(heap_entry(H, Ip, Kp, Vp)),
+    assert(heap_entry(H, I, K, V)).
+
+
+% TEST
+:- initialization(
+    (
+    new_heap(a),
+    insert(a, 2, x),
+    insert(a, 1, y),
+    insert(a, 3, z),
+    insert(a, 5, m),
+    insert(a, 4, n),
+    insert(a, 4, p)
+    )
+).
