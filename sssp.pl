@@ -52,6 +52,8 @@ new_edge(G, U, V) :-
 
 % edges(G, Es) - Questo predicato è vero quando Es è una lista di tutti
 %   gli archi presenti in G.
+
+% TODO: verificare funzionamento
 edges(G, Es) :-
     setof(V, edge(G,_U, _V, _W), Es), !.
 
