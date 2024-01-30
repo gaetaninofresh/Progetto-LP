@@ -111,7 +111,7 @@ not_empty(H) :-
 head(H, K, V) :-
     heap_entry(H, 1, K, V).
 
-% insert(H, K, V) -  è vero quando l’elemento V è inserito 
+% insert(H, K, V) - è vero quando l’elemento V è inserito 
 % nello heap H con chiave K; nel caso in cui la chiave sia già presente 
 % sostituisce il vecchio valore 
 
@@ -126,8 +126,27 @@ insert(H, K, V) :-
     retract(heap(H, S)),
     NewS is S + 1,
     assert(heap(H, NewS)),
+    
     assert(heap_entry(H, NewS, K, V)),
     heapify(H, NewS).
+
+% extract(H, K, V) - è vero quando la coppia K, V con K minima, è rimossa 
+% dallo heap H
+
+
+extract(H, K, V) :-
+    heap_size(H, S),
+    swap(H, 1, S),
+
+    retract(heap_entry(H, S, K, V)),
+
+    % aggiorna la dimensione dello heap
+    retract(heap(H, S)),
+    NewS is S - 1,
+    assert(heap(H, NewS)),
+    
+    heapify(H, NewS).
+
 
 list_heap(H) :-
     listing(heap_entry(H, _I, _K, _V)).
@@ -143,20 +162,23 @@ get_parent_index(I, Pi) :-
 
 get_parent_index(I, Pi) :-
     I > 1,
-    Pi is I / 2.
+    Pi is I div 2.
 
 
 % implementazione delll'algoritmo di heapify
-heapify(H, 0) :- fail.
-heapify(H, 1) :- true.
+heapify(H, 0) :- heap(H, _), fail.
+heapify(H, 1) :- heap(H, _), true.
 
 heapify(H, I) :-
+    heap(H, _),
     get_parent_index(I, Ip),
     heap_entry(H, I, K, _V),
     heap_entry(H, Ip, Pk, _Vp),
-    K > Pk.
+    K > Pk, 
+    heapify(H, Ip).
 
 heapify(H, I) :-
+    heap(H, _),
     get_parent_index(I, Ip),
     heap_entry(H, I, K, _V),
     heap_entry(H, Ip, Pk, _Vp),
@@ -165,6 +187,8 @@ heapify(H, I) :-
     heapify(H, Ip).
 
 % scambia i nodi nell'heap H con indice I e IP 
+swap(H, I, I) :- heap(H, _).
+
 swap(H, I, Ip) :-
     heap_entry(H, I, K, V),
     heap_entry(H, Ip, Kp, Vp),
@@ -172,8 +196,8 @@ swap(H, I, Ip) :-
     retract(heap_entry(H, I, K, V)),
     retract(heap_entry(H, Ip, Kp, Vp)),
     
-    assert(heap_entry(H, Ip, Kp, Vp)),
-    assert(heap_entry(H, I, K, V)).
+    asserta(heap_entry(H, Ip, K, V)),
+    asserta(heap_entry(H, I, Kp, Vp)).
 
 
 % TEST
@@ -185,6 +209,9 @@ swap(H, I, Ip) :-
     insert(a, 3, z),
     insert(a, 5, m),
     insert(a, 4, n),
-    insert(a, 4, p)
+    insert(a, 4, p),
+    list_heap(a)
+    %extract(a, 1, y),
+    %list_heap(a)
     )
 ).
