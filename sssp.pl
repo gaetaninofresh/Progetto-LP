@@ -52,14 +52,13 @@ new_edge(G, U, V) :-
 
 % edges(G, Es) - Questo predicato è vero quando Es è una lista di tutti
 %   gli archi presenti in G.
-
 % TODO: verificare funzionamento
 edges(G, Es) :-
-    setof(V, edge(G,_U, _V, _W), Es), !.
+    setof(_, edge(G,_U, _V, _W), Es), !.
 
 edges(G, Es) :-
     is_list(Es),
-    setof(V, edge(G,_U, _V, _W), L),
+    setof(_, edge(G,_U, _V, _W), L),
     permutation(L, Es), !.
 
 % neighbors(G, V, Ns) - Questo predicato è vero quando V è un vertice di G e 
@@ -83,17 +82,7 @@ list_graph(G) :-
     list_vertices(G),
     list_edges(G).
 
-% modify_key(H, NewK, OldK, V) - è vero quando la chiave OldKey 
-% (associata al valore V) è sostituita
-% da NewKey
 
-modify_key(H, NewK, NewK, _V).
-
-modify_key(H, NewK, OldK, V) :-
-    retract(heap_entry(H, P, OldK, V)),
-    assert(heap_entry(H, P, NewK, V)),
-    heap(H, S),
-    heapify(H, S).
 
 % MINHEAP
 
@@ -128,8 +117,6 @@ head(H, K, V) :-
 % insert(H, K, V) - è vero quando l’elemento V è inserito 
 % nello heap H con chiave K; nel caso in cui la chiave sia già presente 
 % sostituisce il vecchio valore 
-
-
 insert(H, K, V) :-
     retract(heap_entry(H, P, K, _Oldv)),
     assert(heap_entry(H, P, K, V)), !.
@@ -146,8 +133,6 @@ insert(H, K, V) :-
 
 % extract(H, K, V) - è vero quando la coppia K, V con K minima, è rimossa 
 % dallo heap H
-
-
 extract(H, K, V) :-
     heap_size(H, S),
     swap(H, 1, S),
@@ -161,6 +146,17 @@ extract(H, K, V) :-
     
     heapify(H, NewS).
 
+% modify_key(H, NewK, OldK, V) - è vero quando la chiave OldKey 
+% (associata al valore V) è sostituita
+% da NewKey
+
+modify_key(H, NewK, NewK, _V) :- heap(H, _).
+
+modify_key(H, NewK, OldK, V) :-
+    retract(heap_entry(H, P, OldK, V)),
+    assert(heap_entry(H, P, NewK, V)),
+    heap(H, S),
+    heapify(H, S).
 
 list_heap(H) :-
     listing(heap_entry(H, _I, _K, _V)).
@@ -169,7 +165,6 @@ list_heap(H) :-
 
 % get_parent_index(I, Pi) - unifica Pi col valore della posizione del nodo 
 % padre del nodo in posizione I
-
 get_parent_index(I, Pi) :-
     I =< 1,
     Pi = 1, !. 
@@ -182,7 +177,6 @@ get_parent_index(I, Pi) :-
 % implementazione delll'algoritmo di heapify
 heapify(H, 0) :- heap(H, _), fail.
 heapify(H, 1) :- heap(H, _), true.
-
 heapify(H, I) :-
     heap(H, _),
     get_parent_index(I, Ip),
@@ -217,15 +211,39 @@ swap(H, I, Ip) :-
 % TEST
 :- initialization(
     (
-    new_heap(a),
-    insert(a, 2, x),
-    insert(a, 1, y),
-    insert(a, 3, z),
-    insert(a, 5, m),
-    insert(a, 4, n),
-    insert(a, 4, p),
-    list_heap(a),
-    %extract(a, 1, y),
-    list_heap(a)
+        
+        test_graph is 1,
+        test_minheap is 0,
+        
+        test_minheap -> (
+            new_heap(a),
+            insert(a, 2, x),
+            insert(a, 1, y),
+            insert(a, 3, z),
+            insert(a, 5, m),
+            insert(a, 4, n),
+            insert(a, 4, p),
+            list_heap(a),
+            extract(a, 1, y),
+            list_heap(a)
+        );
+
+        test_graph -> (
+            new_graph(g),
+            new_vertex(g, a),
+            new_vertex(g, b),
+            new_vertex(g, c),
+            new_vertex(g, d),
+            new_vertex(g, e),
+            list_vertices(g),
+
+            new_edge(g, a, b),
+            new_edge(g, a, e),
+            new_edge(g, a, d),
+            new_edge(g, b, c),
+            new_edge(g, d, c),
+            new_edge(g, e, d),
+            list_edges(g)
+            )
     )
 ).
