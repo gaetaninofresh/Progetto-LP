@@ -4,6 +4,9 @@
 :- dynamic edge/4.
 :- dynamic heap/2.
 :- dynamic heap_entry/4.
+:- dynamic visited/2.
+:- dynamic distance/3.
+:- dynamic previous/3.
 
 % GRAPH
 % new_graph(G) - aggiunge il grafo G alla base di conoscenza
@@ -45,9 +48,14 @@ list_vertices(G) :-
 % new_edge(G, U, V, Weight) - Aggiunge un arco del grafo G 
 %   alla base dati Prolog.
 new_edge(G, U, V, Weight) :-
+    vertex(G, V),
+    vertex(G, U),
+    Weight > 1,
     assert(edge(G, U, V, Weight)).
 
 new_edge(G, U, V) :-
+    vertex(G, V),
+    vertex(G, U),
     new_edge(G, U, V, 1).
 
 % edges(G, Es) - Questo predicato è vero quando Es è una lista di tutti
@@ -161,6 +169,88 @@ modify_key(H, NewK, OldK, V) :-
 list_heap(H) :-
     listing(heap_entry(H, _I, _K, _V)).
 
+% DIJKSTRA
+% change_distance(G, V, NewDist) - ha sempre successo con due effetti 
+% collaterali: prima tutte le istanze di distance(G, V, _) vengono ritratte
+% e distance(G, V,NewDist) è asserita. 
+change_distance(G, V, NewDist) :-
+    graph(G),
+    retractall(distance(G, V, _)),
+    assert(distance(G, V, NewDist)).
+
+% change_previous(G, V, U) - ha successo con due effetti collaterali: 
+% prima tutte le istanze di previous(G, V, _) sono ritirate e 
+% previous(G, V, U) è asserita.
+change_previous(G, V, U) :-
+    graph(G),
+    vertex(G, V),
+    vertex(G, U),
+    retractall(previous(G, V, _)),
+    assert(previous(G, V, U)).
+
+% set_visited(G, V) - ha successo con un effetto collaterale: asserisce V come 
+% visitato
+set_visited(G, V) :-
+    graph(G),
+    vertex(G, V),
+    assert(visited(G, V)).
+
+
+
+init_sssp(G, Source) :-
+    
+    retractall(visited(G, V)),
+    retractall(previous(G, V, _)),
+    
+    forall(vertex(G, V),
+        change_distance(G, V, inf)
+    ),
+    change_distance(G, Source, 0).
+
+
+dijkstra(G, Source) :-
+    set_visited(G, Source),
+    neighbors(G, Source, Ns),
+    forall(
+        (
+            vertex(G, N),
+            member(N, Ns),
+            not(visited(G, vertex(G, N)))
+        ),
+        (
+            distance(G, vertex(G, N), OldDist),
+            distance(G, Source, SDist),
+            edge(G, Source, N, Cost),
+            NewDist is Cost + SDist,
+            NewDist < OldDist,
+            change_distance(G, vertex(G, N), NewDist),
+            change_previous(G, vertex(G, N), Source)
+        )
+    ).
+    
+
+dijkstra(G, Source) :-
+    set_visited(G, Source),
+    neighbors(G, Source, Ns),
+    forall(
+        (
+            vertex(G, N),
+            member(N, Ns),
+            not(visited(G, vertex(G, N))),
+            distance(G, N, D),
+            D == inf
+        ),
+        (
+            edge(G, Source, N, D),
+            change_distance(G, N, D),
+            change_previous(G, N, Source)
+        )
+    ).
+    
+
+
+
+
 % PREDICATI AGGIUNTIVI
 
 % get_parent_index(I, Pi) - unifica Pi col valore della posizione del nodo 
@@ -177,6 +267,7 @@ get_parent_index(I, Pi) :-
 % implementazione delll'algoritmo di heapify
 heapify(H, 0) :- heap(H, _), fail.
 heapify(H, 1) :- heap(H, _), true.
+
 heapify(H, I) :-
     heap(H, _),
     get_parent_index(I, Ip),
@@ -208,12 +299,16 @@ swap(H, I, Ip) :-
     asserta(heap_entry(H, I, Kp, Vp)).
 
 
+ 
+
+
+
 % TEST
 :- initialization(
     (
         
         assert(test_graph),
-        %assert(test_minheap),
+        assert(test_minheap),
         
         test_minheap -> (
             new_heap(a),
