@@ -63,11 +63,13 @@ edges(G, Es) :-
 
 % neighbors(G, V, Ns) - Questo predicato è vero quando V è un vertice di G e 
 %   Ns è una lista contenente gli archi, edge(G, V, N, W), 
-%   che portano ai vertici N immediatamente raggiungibili da V 
+%   che portano ai vertici N immediatamente raggiungibili da V, il grafo viene
+%   considerato non orientato 
 
-% TODO: the rock controlla la funzione
 neighbors(G, V, Ns) :-
-    findall(N, edge(G, V, N, _), Ns).
+    findall(N, edge(G, V, N, _), L1),
+    findall(N, edge(G, N, V, _), L2),
+    union(L1, L2, Ns).
     % passo _ perchè il peso dei nodi non mi interssa
 
 % list_edges(G) - Questo predicato stampa alla console dell’interprete Prolog
@@ -87,8 +89,6 @@ list_graph(G) :-
 % MINHEAP
 
 % new_heap(H) - crea un nuovo heap H e lo inserisce nella base di conoscenza
-% TODO: capire che vuol dire "mantiene la dimensione corrente dello heap nel
-% secondo argomento."
 new_heap(H) :- heap(H, _S), !.
 new_heap(H) :- assert(heap(H, 0)), !.
 
@@ -212,8 +212,8 @@ swap(H, I, Ip) :-
 :- initialization(
     (
         
-        test_graph is 1,
-        test_minheap is 0,
+        assert(test_graph),
+        %assert(test_minheap),
         
         test_minheap -> (
             new_heap(a),
@@ -226,7 +226,7 @@ swap(H, I, Ip) :-
             list_heap(a),
             extract(a, 1, y),
             list_heap(a)
-        );
+        ),
 
         test_graph -> (
             new_graph(g),
@@ -237,13 +237,13 @@ swap(H, I, Ip) :-
             new_vertex(g, e),
             list_vertices(g),
 
-            new_edge(g, a, b),
-            new_edge(g, a, e),
-            new_edge(g, a, d),
-            new_edge(g, b, c),
-            new_edge(g, d, c),
-            new_edge(g, e, d),
+            new_edge(g, a, b, 3),
+            new_edge(g, a, e, 11),
+            new_edge(g, a, d, 4),
+            new_edge(g, b, c, 5),
+            new_edge(g, d, c, 7),
+            new_edge(g, e, d, 6),
             list_edges(g)
-            )
+        )
     )
 ).
