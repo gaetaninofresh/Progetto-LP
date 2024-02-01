@@ -269,7 +269,7 @@ dijkstra_sssp(G, Source) :-
     new_heap(h),
     distance(G, Source, Key),
     insert(h, Key, Source).
-    %dijkstra(G, Source, h).
+    dijkstra(G, Source, h).
 
 
 % PREDICATI AGGIUNTIVI
