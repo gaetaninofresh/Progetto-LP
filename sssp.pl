@@ -7,6 +7,7 @@
 :- dynamic visited/2.
 :- dynamic distance/3.
 :- dynamic previous/3.
+:- discontiguous dijkstra/3.
 
 % GRAPH
 % new_graph(G) - aggiunge il grafo G alla base di conoscenza
@@ -211,14 +212,14 @@ init_sssp(G, Source) :-
     set_visited(G, Source).
 
 
-dijkstra(G, Source, Heap) :-
+dijkstra(_, _, Heap) :-
     empty(Heap), !.
 
 
 dijkstra(G, Source, Heap) :-
     set_visited(G, Source),
     neighbors(G, Source, Ns),
-    extract(H, _, V),
+    extract(Heap, _, V),
     forall(
         (
             member(N, Ns),
@@ -241,12 +242,11 @@ dijkstra(G, Source, Heap) :-
 dijkstra(G, Source, Heap) :-
     set_visited(G, Source),
     neighbors(G, Source, Ns),
-    extract(H, _, V),
+    extract(Heap, _, V),
     forall(
         (
             member(N, Ns),
-            not(visited(G, N)),
-            insert(H, K, V)
+            not(visited(G, N))
         ),
         (
             distance(G, N, OldDist),
@@ -255,7 +255,8 @@ dijkstra(G, Source, Heap) :-
             NewDist is Cost + SDist,
             NewDist < OldDist,
             change_distance(G, N, NewDist),
-            change_previous(G, N, Source)
+            change_previous(G, N, Source),
+            insert(Heap, NewDist, V)
         )
     ),
     list_heap(Heap),
@@ -278,7 +279,7 @@ dijkstra_sssp(G, Source) :-
 % padre del nodo in posizione I
 get_parent_index(I, Pi) :-
     I =< 1,
-    Pi = null, !. 
+    Pi = 1, !.
 
 get_parent_index(I, Pi) :-
     I > 1,
@@ -288,7 +289,7 @@ get_parent_index(I, Pi) :-
 % implementazione delll'algoritmo di heapify
 heapify(H, 0) :- heap(H, _), fail.
 heapify(H, 1) :- heap(H, _), true.
-heapify(H, null) :- true, !.
+
 
 heapify(H, I) :-
     heap(H, _),
@@ -332,19 +333,6 @@ swap(H, I, Ip) :-
         assert(test_graph),
         assert(test_minheap),
         
-        test_minheap -> (
-            new_heap(a),
-            insert(a, 2, x),
-            insert(a, 1, y),
-            insert(a, 3, z),
-            insert(a, 5, m),
-            insert(a, 4, n),
-            insert(a, 4, p),
-            list_heap(a),
-            extract(a, 1, y),
-            list_heap(a)
-        ),
-
         test_graph -> (
             new_graph(g),
             new_vertex(g, a),
@@ -362,35 +350,6 @@ swap(H, I, Ip) :-
             new_edge(g, vertex(g, e), vertex(g, d), 6),
             list_edges(g)
         )
-        /*
-        init_sssp(g, vertex(g,a)),
-        dijkstra(g, vertex(g,a)),
-        forall(
-            distance(g, V, C),
-            (
-                write(distance(g, V, C)),
-                nl
-            )
-        ),
-        nl,
-        dijkstra(g, vertex(g,b)),
-        forall(
-            distance(g, V, C),
-            (
-                write(distance(g, V, C)),
-                nl
-            )
-        )
-        */
-        /*
-        dijkstra_sssp(g, vertex(g, a)),
-        forall(
-            distance(g, V, C),
-            (
-                write(distance(g, V, C)),
-                nl
-            )
-        )
-        */
+        
     )
 ).
