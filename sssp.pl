@@ -210,33 +210,43 @@ init_sssp(G, Source) :-
     change_distance(G, Source, 0),
     set_visited(G, Source).
 
-dijkstra(G, Source) :-
+
+dijkstra(G, Source, Heap) :-
+    empty(Heap), !.
+
+
+dijkstra(G, Source, Heap) :-
     set_visited(G, Source),
     neighbors(G, Source, Ns),
+    extract(H, _, V),
     forall(
         (
             member(N, Ns),
-            not(visited(G, N)),
+            \+ visited(G, N),
             distance(G, N, D),
-            D == inf
+            D == inf,
+            insert(H, Dist, V)
         ),
         (
             edge(G, Source, N, D),
-            %TODO: sum Source distance
             distance(G, Source, Sdist),
             Dist is D + Sdist,
             change_distance(G, N, Dist),
             change_previous(G, N, Source)
         )
-    ).
+    ),
+    list_heap(Heap),
+    dijkstra(G, V, H).
 
-dijkstra(G, Source) :-
+dijkstra(G, Source, Heap) :-
     set_visited(G, Source),
     neighbors(G, Source, Ns),
+    extract(H, _, V),
     forall(
         (
             member(N, Ns),
-            not(visited(G, N))
+            not(visited(G, N)),
+            insert(H, K, V)
         ),
         (
             distance(G, N, OldDist),
@@ -246,9 +256,10 @@ dijkstra(G, Source) :-
             NewDist < OldDist,
             change_distance(G, N, NewDist),
             change_previous(G, N, Source)
-
         )
-    ).
+    ),
+    list_heap(Heap),
+    dijkstra(G, V, H).
     
 dijkstra_sssp(G, Source) :-
     graph(G),
@@ -257,25 +268,8 @@ dijkstra_sssp(G, Source) :-
 
     new_heap(h),
     distance(G, Source, Key),
-    insert(h, Key, Source),
-    dijkstra(G, Source),
-
-    %heapify nodes
-    forall(
-        (
-            distance(G, V, K),
-            \+ visited(G, V),
-            K \= inf
-        ),
-        (
-            insert(h, K, V)
-        )
-    ),
-
-    head(h, _, Next),
-    extract(h, _, _),
-    dijkstra(G, Next).
-
+    insert(h, Key, Source).
+    %dijkstra(G, Source, h).
 
 
 % PREDICATI AGGIUNTIVI
@@ -284,7 +278,7 @@ dijkstra_sssp(G, Source) :-
 % padre del nodo in posizione I
 get_parent_index(I, Pi) :-
     I =< 1,
-    Pi = 1, !. 
+    Pi = null, !. 
 
 get_parent_index(I, Pi) :-
     I > 1,
@@ -294,6 +288,7 @@ get_parent_index(I, Pi) :-
 % implementazione delll'algoritmo di heapify
 heapify(H, 0) :- heap(H, _), fail.
 heapify(H, 1) :- heap(H, _), true.
+heapify(H, null) :- true, !.
 
 heapify(H, I) :-
     heap(H, _),
