@@ -224,19 +224,19 @@ dijkstra(G, Source, Heap) :-
             member(N, Ns),
             \+ visited(G, N),
             distance(G, N, D),
-            D == inf,
-            insert(H, Dist, V)
+            D == inf
         ),
         (
             edge(G, Source, N, D),
             distance(G, Source, Sdist),
             Dist is D + Sdist,
             change_distance(G, N, Dist),
-            change_previous(G, N, Source)
+            change_previous(G, N, Source),
+            insert(Heap, Dist, V)
         )
     ),
     list_heap(Heap),
-    dijkstra(G, V, H).
+    dijkstra(G, V, Heap).
 
 dijkstra(G, Source, Heap) :-
     set_visited(G, Source),
@@ -259,7 +259,7 @@ dijkstra(G, Source, Heap) :-
         )
     ),
     list_heap(Heap),
-    dijkstra(G, V, H).
+    dijkstra(G, V, Heap).
     
 dijkstra_sssp(G, Source) :-
     graph(G),
