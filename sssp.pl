@@ -48,14 +48,14 @@ list_vertices(G) :-
 % new_edge(G, U, V, Weight) - Aggiunge un arco del grafo G 
 %   alla base dati Prolog.
 new_edge(G, U, V, Weight) :-
-    vertex(G, V),
-    vertex(G, U),
+    nonvar(V),
+    nonvar(U),
     Weight > 1,
     assert(edge(G, U, V, Weight)).
 
 new_edge(G, U, V) :-
-    vertex(G, V),
-    vertex(G, U),
+    nonvar(V),
+    nonvar(U),
     new_edge(G, U, V, 1).
 
 % edges(G, Es) - Questo predicato è vero quando Es è una lista di tutti
@@ -175,6 +175,7 @@ list_heap(H) :-
 % e distance(G, V,NewDist) è asserita. 
 change_distance(G, V, NewDist) :-
     graph(G),
+    nonvar(V),
     retractall(distance(G, V, _)),
     assert(distance(G, V, NewDist)).
 
@@ -183,8 +184,8 @@ change_distance(G, V, NewDist) :-
 % previous(G, V, U) è asserita.
 change_previous(G, V, U) :-
     graph(G),
-    vertex(G, V),
-    vertex(G, U),
+    nonvar(V),
+    nonvar(U),
     retractall(previous(G, V, _)),
     assert(previous(G, V, U)).
 
@@ -192,7 +193,8 @@ change_previous(G, V, U) :-
 % visitato
 set_visited(G, V) :-
     graph(G),
-    vertex(G, V),
+    nonvar(V),
+    retractall(visited(G, V)),
     assert(visited(G, V)).
 
 
@@ -203,51 +205,76 @@ init_sssp(G, Source) :-
     retractall(previous(G, V, _)),
     
     forall(vertex(G, V),
-        change_distance(G, V, inf)
+        change_distance(G, vertex(G, V), inf)
     ),
-    change_distance(G, Source, 0).
-
-
-dijkstra(G, Source) :-
-    set_visited(G, Source),
-    neighbors(G, Source, Ns),
-    forall(
-        (
-            vertex(G, N),
-            member(N, Ns),
-            not(visited(G, vertex(G, N)))
-        ),
-        (
-            distance(G, vertex(G, N), OldDist),
-            distance(G, Source, SDist),
-            edge(G, Source, N, Cost),
-            NewDist is Cost + SDist,
-            NewDist < OldDist,
-            change_distance(G, vertex(G, N), NewDist),
-            change_previous(G, vertex(G, N), Source)
-        )
-    ).
-    
+    change_distance(G, Source, 0),
+    set_visited(G, Source).
 
 dijkstra(G, Source) :-
     set_visited(G, Source),
     neighbors(G, Source, Ns),
     forall(
         (
-            vertex(G, N),
             member(N, Ns),
-            not(visited(G, vertex(G, N))),
+            not(visited(G, N)),
             distance(G, N, D),
             D == inf
         ),
         (
             edge(G, Source, N, D),
-            change_distance(G, N, D),
+            %TODO: sum Source distance
+            distance(G, Source, Sdist),
+            Dist is D + Sdist,
+            change_distance(G, N, Dist),
             change_previous(G, N, Source)
         )
     ).
-    
 
+dijkstra(G, Source) :-
+    set_visited(G, Source),
+    neighbors(G, Source, Ns),
+    forall(
+        (
+            member(N, Ns),
+            not(visited(G, N))
+        ),
+        (
+            distance(G, N, OldDist),
+            distance(G, Source, SDist),
+            edge(G, Source, N, Cost),
+            NewDist is Cost + SDist,
+            NewDist < OldDist,
+            change_distance(G, N, NewDist),
+            change_previous(G, N, Source)
+
+        )
+    ).
+    
+dijkstra_sssp(G, Source) :-
+    graph(G),
+    nonvar(Source),
+    init_sssp(G, Source),
+
+    new_heap(h),
+    distance(G, Source, Key),
+    insert(h, Key, Source),
+    dijkstra(G, Source),
+
+    %heapify nodes
+    forall(
+        (
+            distance(G, V, K),
+            \+ visited(G, V),
+            K \= inf
+        ),
+        (
+            insert(h, K, V)
+        )
+    ),
+
+    head(h, _, Next),
+    extract(h, _, _),
+    dijkstra(G, Next).
 
 
 
@@ -332,13 +359,43 @@ swap(H, I, Ip) :-
             new_vertex(g, e),
             list_vertices(g),
 
-            new_edge(g, a, b, 3),
-            new_edge(g, a, e, 11),
-            new_edge(g, a, d, 4),
-            new_edge(g, b, c, 5),
-            new_edge(g, d, c, 7),
-            new_edge(g, e, d, 6),
+            new_edge(g, vertex(g, a), vertex(g, b), 3),
+            new_edge(g, vertex(g, a), vertex(g, e), 11),
+            new_edge(g, vertex(g, a), vertex(g, d), 4),
+            new_edge(g, vertex(g, b), vertex(g, c), 5),
+            new_edge(g, vertex(g, d), vertex(g, c), 7),
+            new_edge(g, vertex(g, e), vertex(g, d), 6),
             list_edges(g)
         )
+        /*
+        init_sssp(g, vertex(g,a)),
+        dijkstra(g, vertex(g,a)),
+        forall(
+            distance(g, V, C),
+            (
+                write(distance(g, V, C)),
+                nl
+            )
+        ),
+        nl,
+        dijkstra(g, vertex(g,b)),
+        forall(
+            distance(g, V, C),
+            (
+                write(distance(g, V, C)),
+                nl
+            )
+        )
+        */
+        /*
+        dijkstra_sssp(g, vertex(g, a)),
+        forall(
+            distance(g, V, C),
+            (
+                write(distance(g, V, C)),
+                nl
+            )
+        )
+        */
     )
 ).
