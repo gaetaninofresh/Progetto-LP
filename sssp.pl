@@ -217,12 +217,13 @@ dijkstra(_, _, Heap) :-
 
 dijkstra(G, Source, Heap) :-
     set_visited(G, Source),
-    neighbors(G, Source, Ns),
     extract(Heap, _, V),
+    
     forall(
         (
-            member(N, Ns),
-            \+ visited(G, N)
+            visited(G, Visited),
+            neighbors(G, Visited, Ns),
+            member(N, Ns)
         ),
         (
             distance(G, N, OldDist),
