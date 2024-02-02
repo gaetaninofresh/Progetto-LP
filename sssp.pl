@@ -215,7 +215,7 @@ init_sssp(G, Source) :-
 dijkstra(_, _, Heap) :-
     empty(Heap), !.
 
-
+/*
 dijkstra(G, Source, Heap) :-
     set_visited(G, Source),
     neighbors(G, Source, Ns),
@@ -238,7 +238,7 @@ dijkstra(G, Source, Heap) :-
     ),
     list_heap(Heap),
     dijkstra(G, V, Heap).
-
+*/
 dijkstra(G, Source, Heap) :-
     set_visited(G, Source),
     neighbors(G, Source, Ns),
@@ -246,7 +246,7 @@ dijkstra(G, Source, Heap) :-
     forall(
         (
             member(N, Ns),
-            not(visited(G, N))
+            \+ visited(G, N)
         ),
         (
             distance(G, N, OldDist),
@@ -269,8 +269,9 @@ dijkstra_sssp(G, Source) :-
 
     new_heap(h),
     distance(G, Source, Key),
-    insert(h, Key, Source).
-    dijkstra(G, Source, h).
+    insert(h, Key, Source),
+    dijkstra(G, Source, h),
+    delete_heap(h).
 
 
 % PREDICATI AGGIUNTIVI
@@ -287,7 +288,7 @@ get_parent_index(I, Pi) :-
 
 
 % implementazione delll'algoritmo di heapify
-heapify(H, 0) :- heap(H, _), fail, !.
+heapify(H, 0) :- heap(H, _), true, !.
 heapify(H, 1) :- heap(H, _), true, !.
 
 
