@@ -225,7 +225,7 @@ dijkstra(G, Source, Heap) :-
     set_visited(G, Source),
     extract(Heap, _, V),
     
-    foreach(
+    forall(
         (
             visited(G, Visited),
             neighbors(G, Visited, Ns),
