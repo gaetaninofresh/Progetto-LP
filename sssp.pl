@@ -221,10 +221,16 @@ init_sssp(G, Source) :-
 dijkstra(_, _, Heap) :-
     empty(Heap), !.
 
+dijkstra(G,_, Heap) :-
+    forall(
+        vertex(G, V),
+        visited(G, vertex(G, V))
+    ).
+
 dijkstra(G, Source, Heap) :-
     set_visited(G, Source),
-    extract(Heap, _, V),
-    
+    extract(Heap, _, _),
+    %TODO: try to implement using lists
     forall(
         (
             visited(G, Visited),
@@ -233,13 +239,13 @@ dijkstra(G, Source, Heap) :-
             \+ visited(G, N)
         ),
         (
+            edge(G, Visited, N, Cost),
             distance(G, N, OldDist),
-            distance(G, Source, SDist),
-            edge(G, Source, N, Cost),
+            distance(G, Visited, SDist),
             NewDist is Cost + SDist,
             NewDist < OldDist,
             change_distance(G, N, NewDist),
-            change_previous(G, N, Source),
+            change_previous(G, N, Visited),
             insert(Heap, NewDist, N)
         )
     ),
