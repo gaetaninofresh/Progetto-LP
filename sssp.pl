@@ -215,30 +215,6 @@ init_sssp(G, Source) :-
 dijkstra(_, _, Heap) :-
     empty(Heap), !.
 
-/*
-dijkstra(G, Source, Heap) :-
-    set_visited(G, Source),
-    neighbors(G, Source, Ns),
-    extract(Heap, _, V),
-    forall(
-        (
-            member(N, Ns),
-            \+ visited(G, N),
-            distance(G, N, D),
-            D == inf
-        ),
-        (
-            edge(G, Source, N, D),
-            distance(G, Source, Sdist),
-            Dist is D + Sdist,
-            change_distance(G, N, Dist),
-            change_previous(G, N, Source),
-            insert(Heap, Dist, V)
-        )
-    ),
-    list_heap(Heap),
-    dijkstra(G, V, Heap).
-*/
 dijkstra(G, Source, Heap) :-
     set_visited(G, Source),
     neighbors(G, Source, Ns),
@@ -256,11 +232,12 @@ dijkstra(G, Source, Heap) :-
             NewDist < OldDist,
             change_distance(G, N, NewDist),
             change_previous(G, N, Source),
-            insert(Heap, NewDist, V)
+            insert(Heap, NewDist, N)
         )
     ),
     list_heap(Heap),
-    dijkstra(G, V, Heap).
+    head(H, _, Next),
+    dijkstra(G, Next, Heap).
     
 dijkstra_sssp(G, Source) :-
     graph(G),
