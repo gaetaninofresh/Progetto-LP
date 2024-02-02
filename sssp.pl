@@ -287,8 +287,8 @@ get_parent_index(I, Pi) :-
 
 
 % implementazione delll'algoritmo di heapify
-heapify(H, 0) :- heap(H, _), fail.
-heapify(H, 1) :- heap(H, _), true.
+heapify(H, 0) :- heap(H, _), fail, !.
+heapify(H, 1) :- heap(H, _), true, !.
 
 
 heapify(H, I) :-
