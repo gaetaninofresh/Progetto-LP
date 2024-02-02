@@ -76,9 +76,15 @@ edges(G, Es) :-
 %   considerato non orientato 
 
 neighbors(G, V, Ns) :-
+    % TODO: verificare bidirezionalità degli archi
+    /*
     findall(N, edge(G, V, N, _), L1),
     findall(N, edge(G, N, V, _), L2),
     union(L1, L2, Ns).
+    */
+    findall(N, edge(G, N, V, _), Ns).
+    
+    
     % passo _ perchè il peso dei nodi non mi interssa
 
 % list_edges(G) - Questo predicato stampa alla console dell’interprete Prolog
@@ -219,11 +225,12 @@ dijkstra(G, Source, Heap) :-
     set_visited(G, Source),
     extract(Heap, _, V),
     
-    forall(
+    foreach(
         (
             visited(G, Visited),
             neighbors(G, Visited, Ns),
-            member(N, Ns)
+            member(N, Ns),
+            \+ visited(G, N)
         ),
         (
             distance(G, N, OldDist),
@@ -236,7 +243,7 @@ dijkstra(G, Source, Heap) :-
             insert(Heap, NewDist, N)
         )
     ),
-    list_heap(Heap),
+    %list_heap(Heap),
     head(H, _, Next),
     dijkstra(G, Next, Heap).
     
@@ -322,11 +329,23 @@ swap(H, I, Ip) :-
             list_vertices(g),
 
             new_edge(g, vertex(g, a), vertex(g, b), 3),
+            new_edge(g, vertex(g, b), vertex(g, a), 3),
+            
             new_edge(g, vertex(g, a), vertex(g, e), 11),
+            new_edge(g, vertex(g, e), vertex(g, a), 11),
+            
             new_edge(g, vertex(g, a), vertex(g, d), 4),
+            new_edge(g, vertex(g, d), vertex(g, a), 4),
+            
             new_edge(g, vertex(g, b), vertex(g, c), 5),
+            new_edge(g, vertex(g, c), vertex(g, b), 5),
+            
             new_edge(g, vertex(g, d), vertex(g, c), 7),
+            new_edge(g, vertex(g, c), vertex(g, d), 7),
+            
             new_edge(g, vertex(g, e), vertex(g, d), 6),
+            new_edge(g, vertex(g, d), vertex(g, e), 6),
+            
             list_edges(g)
         )
         
