@@ -7,7 +7,6 @@
 :- dynamic visited/2.
 :- dynamic distance/3.
 :- dynamic previous/3.
-:- discontiguous dijkstra/3.
 
 % GRAPH
 % new_graph(G) - aggiunge il grafo G alla base di conoscenza
@@ -33,11 +32,11 @@ new_vertex(G, V) :-
 
 % vertices(G, Vs) - ritorna ver/falso se Vs è la lista di tutti i vertici di G 
 vertices(G, Vs) :-
-    setof(V, vertex(G,V), Vs), !.
+    findall(V, vertex(G,V), Vs), !.
 
 vertices(G, Vs) :-
     is_list(Vs),
-    setof(V, vertex(G,V), L),
+    findall(V, vertex(G,V), L),
     permutation(L, Vs), !.
 
 % list_vertices(G) - stampa tutti i vertici del grafo G
@@ -51,7 +50,7 @@ list_vertices(G) :-
 new_edge(G, U, V, Weight) :-
     nonvar(V),
     nonvar(U),
-    Weight > 1,
+    Weight >= 1,
     assert(edge(G, U, V, Weight)).
 
 new_edge(G, U, V) :-
@@ -63,11 +62,11 @@ new_edge(G, U, V) :-
 %   gli archi presenti in G.
 % TODO: verificare funzionamento
 edges(G, Es) :-
-    setof(_, edge(G,_U, _V, _W), Es), !.
+    findall(_, edge(G,_U, _V, _W), Es), !.
 
 edges(G, Es) :-
     is_list(Es),
-    setof(_, edge(G,_U, _V, _W), L),
+    findall(_, edge(G,_U, _V, _W), L),
     permutation(L, Es), !.
 
 % neighbors(G, V, Ns) - Questo predicato è vero quando V è un vertice di G e 
@@ -131,7 +130,13 @@ head(H, K, V) :-
 
 % insert(H, K, V) - è vero quando l’elemento V è inserito 
 % nello heap H con chiave K; nel caso in cui la chiave sia già presente 
-% sostituisce il vecchio valore 
+% sostituisce il vecchio valore, non fa nulla se proviamo a reinserire la 
+% stessa coppia (K, V)
+
+insert(H, K, V) :-
+    heap_entry(H, _P, K, V), !.
+
+
 insert(H, K, V) :-
     retract(heap_entry(H, P, K, _Oldv)),
     assert(heap_entry(H, P, K, V)), !.
@@ -148,6 +153,9 @@ insert(H, K, V) :-
 
 % extract(H, K, V) - è vero quando la coppia K, V con K minima, è rimossa 
 % dallo heap H
+extract(H, K, V) :-
+    empty(H).
+
 extract(H, K, V) :-
     heap_size(H, S),
     swap(H, 1, S),
@@ -204,8 +212,6 @@ set_visited(G, V) :-
     retractall(visited(G, V)),
     assert(visited(G, V)).
 
-
-
 init_sssp(G, Source) :-
     
     retractall(visited(G, V)),
@@ -217,53 +223,56 @@ init_sssp(G, Source) :-
     change_distance(G, Source, 0),
     set_visited(G, Source).
 
-
 dijkstra(_, _, Heap) :-
     empty(Heap), !.
-
-dijkstra(G,_, Heap) :-
-    forall(
-        vertex(G, V),
-        visited(G, vertex(G, V))
-    ).
-
+  
 dijkstra(G, Source, Heap) :-
     set_visited(G, Source),
     extract(Heap, _, _),
-    %TODO: try to implement using lists
+    findall(
+        V,
+        visited(G, V),
+        Visited
+    ),
+    
+    findall(
+        V,
+        (
+            member(Exp, Visited),
+            neighbors(G, Exp, N),
+            member(V, N),
+            \+ visited(G, V)
+        ),
+        L
+    ),
+    %removes unwanted duplicates
+    sort(L, Neighbors),
+    
     forall(
         (
-            visited(G, Visited),
-            neighbors(G, Visited, Ns),
-            member(N, Ns),
-            \+ visited(G, N)
+            member(Node, Neighbors),
+            member(Exp, Visited),
+            edge(G, Exp, Node, ArcCost)
         ),
         (
-            edge(G, Visited, N, Cost),
-            distance(G, N, OldDist),
-            distance(G, Visited, SDist),
-            NewDist is Cost + SDist,
-            NewDist < OldDist,
-            change_distance(G, N, NewDist),
-            change_previous(G, N, Visited),
-            insert(Heap, NewDist, N)
+            dijkstra_check_cost(G, Node, Exp, NewDist),
+            dijkstra_heap_insert(H, NewDist, Node)
         )
     ),
-    %list_heap(Heap),
-    head(H, _, Next),
-    dijkstra(G, Next, Heap).
-    
+    list_heap(H),
+    head(H, _, Head),
+    dijkstra(G, Head, H).
+
 dijkstra_sssp(G, Source) :-
     graph(G),
     nonvar(Source),
     init_sssp(G, Source),
 
     new_heap(h),
-    distance(G, Source, Key),
-    insert(h, Key, Source),
+    
+    insert(h, 0, Source),
     dijkstra(G, Source, h),
-    delete_heap(h).
-
+    list_heap(h).
 
 % PREDICATI AGGIUNTIVI
 
@@ -313,47 +322,69 @@ swap(H, I, Ip) :-
     asserta(heap_entry(H, Ip, K, V)),
     asserta(heap_entry(H, I, Kp, Vp)).
 
+dijkstra_heap_insert(H, K, V) :-
+    heap_entry(H, _, OldK, V),
+    modify_key(H, K, OldK, V), !.
 
- 
+dijkstra_heap_insert(H, K, V) :-
+    insert(H, K, V), !.
 
+dijkstra_check_cost(G, V, Prev, R) :-
+    distance(G, Prev, PrevCost),
+    distance(G, V, OldDist),
+    edge(G, Prev, V, Cost),
+    NewDist is Cost + PrevCost,
+    NewDist < OldDist,
+    R = NewDist,
+    change_distance(G, V, NewDist),
+    change_previous(G, V, Prev), !.
+
+dijkstra_check_cost(G, V, Prev, R) :-
+    distance(G, Prev, PrevCost),
+    distance(G, V, OldDist),
+    edge(G, Prev, V, Cost),
+    NewDist is Cost + PrevCost,
+    NewDist >= OldDist,
+    R = OldDist, !.
 
 
 % TEST
-:- initialization(
+:- initialization (
     (
         
-        assert(test_graph),
-        assert(test_minheap),
+        new_graph(g),
+        new_vertex(g, a),
+        new_vertex(g, b),
+        new_vertex(g, c),
+        new_vertex(g, d),
+        new_vertex(g, e),
+        new_vertex(g, f),
+        new_vertex(g, h),
         
-        test_graph -> (
-            new_graph(g),
-            new_vertex(g, a),
-            new_vertex(g, b),
-            new_vertex(g, c),
-            new_vertex(g, d),
-            new_vertex(g, e),
-            list_vertices(g),
-
-            new_edge(g, vertex(g, a), vertex(g, b), 3),
-            new_edge(g, vertex(g, b), vertex(g, a), 3),
-            
-            new_edge(g, vertex(g, a), vertex(g, e), 11),
-            new_edge(g, vertex(g, e), vertex(g, a), 11),
-            
-            new_edge(g, vertex(g, a), vertex(g, d), 4),
-            new_edge(g, vertex(g, d), vertex(g, a), 4),
-            
-            new_edge(g, vertex(g, b), vertex(g, c), 5),
-            new_edge(g, vertex(g, c), vertex(g, b), 5),
-            
-            new_edge(g, vertex(g, d), vertex(g, c), 7),
-            new_edge(g, vertex(g, c), vertex(g, d), 7),
-            
-            new_edge(g, vertex(g, e), vertex(g, d), 6),
-            new_edge(g, vertex(g, d), vertex(g, e), 6),
-            
-            list_edges(g)
-        )
+        new_edge(g, vertex(g, a), vertex(g, b), 3),
+        new_edge(g, vertex(g, b), vertex(g, a), 3),
         
+        new_edge(g, vertex(g, a), vertex(g, e), 11),
+        new_edge(g, vertex(g, e), vertex(g, a), 11),
+        
+        new_edge(g, vertex(g, a), vertex(g, d), 4),
+        new_edge(g, vertex(g, d), vertex(g, a), 4),
+        
+        new_edge(g, vertex(g, b), vertex(g, c), 5),
+        new_edge(g, vertex(g, c), vertex(g, b), 5),
+        
+        new_edge(g, vertex(g, d), vertex(g, c), 7),
+        new_edge(g, vertex(g, c), vertex(g, d), 7),
+        
+        new_edge(g, vertex(g, e), vertex(g, d), 6),
+        new_edge(g, vertex(g, d), vertex(g, e), 6),
+        
+        new_edge(g, vertex(g, a), vertex(g, f), 3),
+        new_edge(g, vertex(g, f), vertex(g, a), 3),
+        
+        new_edge(g, vertex(g, c), vertex(g, h), 1),
+        new_edge(g, vertex(g, h), vertex(g, c), 1),
+        
+        list_edges(g)
     )
 ).
