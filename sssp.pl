@@ -283,8 +283,9 @@ shortest_path(G, Source, V, Path) :-
     nonvar(Source),
 
     previous(G, V, Prev),
-    shortest_path(G, Source, Prev, NewPath),
-    append([edge(G, Prev, V, W)], NewPath, Path), !.
+    edge(G, Prev, V, W),
+    shortest_path(G, Source, Prev, PrevPath),
+    append([edge(G, Prev, V, W)], PrevPath, Path), !.
 
 % PREDICATI AGGIUNTIVI
 
