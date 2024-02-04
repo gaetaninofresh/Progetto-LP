@@ -223,8 +223,7 @@ init_sssp(G, Source) :-
     change_distance(G, Source, 0),
     set_visited(G, Source).
 
-dijkstra(_, _, Heap) :-
-    empty(Heap), !.
+
   
 dijkstra(G, Source, Heap) :-
     set_visited(G, Source),
@@ -259,9 +258,11 @@ dijkstra(G, Source, Heap) :-
             dijkstra_heap_insert(H, NewDist, Node)
         )
     ),
-    list_heap(H),
     head(H, _, Head),
-    dijkstra(G, Head, H).
+    dijkstra(G, Head, H), !.
+
+dijkstra(_, _, Heap) :-
+    empty(Heap), !.
 
 dijkstra_sssp(G, Source) :-
     graph(G),
@@ -271,8 +272,7 @@ dijkstra_sssp(G, Source) :-
     new_heap(h),
     
     insert(h, 0, Source),
-    dijkstra(G, Source, h),
-    list_heap(h).
+    dijkstra(G, Source, h).
 
 % PREDICATI AGGIUNTIVI
 
