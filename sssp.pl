@@ -60,7 +60,7 @@ new_edge(G, U, V) :-
 
 % edges(G, Es) - Questo predicato è vero quando Es è una lista di tutti
 %   gli archi presenti in G.
-% TODO: verificare funzionamento
+
 edges(G, Es) :-
     findall(_, edge(G,_U, _V, _W), Es), !.
 
@@ -153,7 +153,7 @@ insert(H, K, V) :-
 
 % extract(H, K, V) - è vero quando la coppia K, V con K minima, è rimossa 
 % dallo heap H
-extract(H, K, V) :-
+extract(H, _, _) :-
     empty(H).
 
 extract(H, K, V) :-
@@ -251,7 +251,7 @@ dijkstra(G, Source, Heap) :-
         (
             member(Node, Neighbors),
             member(Exp, Visited),
-            edge(G, Exp, Node, ArcCost)
+            edge(G, Exp, Node, _)
         ),
         (
             dijkstra_check_cost(G, Node, Exp, NewDist),
@@ -273,6 +273,18 @@ dijkstra_sssp(G, Source) :-
     
     insert(h, 0, Source),
     dijkstra(G, Source, h).
+
+
+shortest_path(G, Source, Source, []) :- !.
+
+shortest_path(G, Source, V, Path) :-
+    graph(G),
+    nonvar(V),
+    nonvar(Source),
+
+    previous(G, V, Prev),
+    shortest_path(G, Source, Prev, NewPath),
+    append([edge(G, Prev, V, W)], NewPath, Path), !.
 
 % PREDICATI AGGIUNTIVI
 

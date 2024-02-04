@@ -1,0 +1,14 @@
+1. Capire come considerare gli archi (bidirezionali o no)
+2. Corner case con due nodi con costo uguale (vedi immagine)
+3. Test con grande numero di nodi
+4. Formattazione input dijkstra_sssp(g, a) o dijkstra_sssp(g, vertex(g,a))?
+5. Come comportarsi in caso di chiavi uguali
+
+
+Buongiorno,
+avrei alcune perplessità riguardo l'implementazione di alcuni predicati:
+- Gli archi del grafo vanno considerati sempre come bidirezionali, ovvero il grafo va considerato orientato?
+- Come bisogna comportarsi nel MinHeap quando proviamo a inserire una entry con chiave esistente ma valore diverso? Va sovrascritto il vecchio valore?
+- Nei predicati che richiedono in input un vertice questo va passato nella forma vertex(G, V) o va passato soltanto il nome del vertice (ie - neighbors(g, vertex(g, v1), Ns) o neighbors(g, v1, Ns)) ?
+
+La ringrazio in anticipo per la risposta, cordiali saluti
