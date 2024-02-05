@@ -72,3 +72,30 @@
             NIL
           ;; Altrimenti, filtra la lista degli archi per includere solo quelli che partono da vertex-id
           (remove-if-not (lambda (edge) (equal (second edge) vertex-id)) edges))))))
+
+
+;; CODICE LUCA
+;Questa funzione ritorna il graph-id stesso.
+(defun is-graph (graph-id)
+  (gethash graph-id *graphs*))
+
+;Questa funzione genera un nuovo grafo e lo inserisce nel data base
+(defun new-graph (graph-id)
+  (or (gethash graph-id *graphs*)
+      (setf 
+       (gethash graph-id *graphs*) 
+       graph-id)))
+
+;Rimuove l'intero grafo dal sistema 
+(defun delete-graph (graph-id)
+  (remhash graph-id *graphs*)
+  nil)
+
+;Aggiunge un nuovo vertice vertex-id al grafo graph-id.
+(defun new-vertex (graph-id vertex-id) 
+  (setf (gethash (list vertex graph-id vertex-id) *vertices*)
+        (list vertex graph-id vertex-id)))
+
+;Questa funzione torna una lista di vertici del grafo.
+
+
