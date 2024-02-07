@@ -1,0 +1,72 @@
+;;; is-graph - ritorna il graph-id stesso.
+(defun is-graph (graph-id)
+  (gethash graph-id *graphs*))
+
+;;; new-graph - genera un nuovo grafo e lo inserisce nel data base
+(defun new-graph (graph-id)
+  (or (gethash graph-id *graphs*)
+      (setf 
+       (gethash graph-id *graphs*) 
+       graph-id)))
+
+;;; delete-graph rimuove l'intero grafo dal sistema 
+(defun delete-graph (graph-id)
+  (remhash graph-id *graphs*)
+  nil)
+
+;;; new-vertex - aggiunge un nuovo vertice vertex-id al grafo graph-id.
+(defun new-vertex (graph-id vertex-id) 
+  (setf (gethash (list vertex graph-id vertex-id) *vertices*)
+        (list vertex graph-id vertex-id)))
+
+;;; graph-vertices - ritorna una lista di vertici del grafo.
+(defun graph-vertices (graph-id)
+  (let ((key-list ()) (value-list ()))
+    (maphash (
+        lambda (key value)
+            (cond (
+                (equal (second key) graph-id)
+                    (push key key-list)
+                    (push value value-list)
+                )
+            )
+        )
+      *vertices*
+    )
+    value-list
+  )
+)
+
+(defun new-edge (graph-id vertex-id vertex2-id &optional weight)
+  ; controllo se esistano i veritici nel grafo
+  (gethash graph-id *graphs*)
+  (and ((gethash vertex-id *vertices*) (equal (first vertex-id ) graph-id)))
+  (and ((gethash vertex2-id *vertices*) (equal (first vertex2-id ) graph-id)))
+
+  (setf gethash (list edge graph-id vertex-id vertex2-id weight) *edges*)
+        (list edge graph-id vertex-id vertex2-id weight)
+)
+
+
+
+;;; TEST
+
+(defun test-1 (graph-id)
+  (new-graph graph-id)
+  (new-vertex graph-id 's)
+  (new-vertex graph-id 'a)
+  (new-vertex graph-id 'b)
+  (new-vertex graph-id 'c)
+  (new-vertex graph-id 'd)
+  (new-vertex graph-id 'e)
+  (new-vertex graph-id 'f)
+  (new-arc graph-id 'a 'b 6)
+  (new-arc graph-id 's 'a 2)
+  (new-arc graph-id 's 'd 8)
+  (new-arc graph-id 'a 'c 2)
+  (new-arc graph-id 'd 'c 2)
+  (new-arc graph-id 'd 'e 2)
+  (new-arc graph-id 'c 'e 9)
+  (new-arc graph-id 'e 'f 1)
+  (new-arc graph-id 'b 'f 5)
+  T)

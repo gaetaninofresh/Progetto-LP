@@ -77,27 +77,48 @@
 
 
 ;; CODICE LUCA
-;Questa funzione ritorna il graph-id stesso.
+;;; is-graph - ritorna il graph-id stesso.
 (defun is-graph (graph-id)
   (gethash graph-id *graphs*))
 
-;Questa funzione genera un nuovo grafo e lo inserisce nel data base
+;;; new-graph - genera un nuovo grafo e lo inserisce nel data base
 (defun new-graph (graph-id)
   (or (gethash graph-id *graphs*)
       (setf 
        (gethash graph-id *graphs*) 
        graph-id)))
 
-;Rimuove l'intero grafo dal sistema 
+;;; delete-graph rimuove l'intero grafo dal sistema 
 (defun delete-graph (graph-id)
   (remhash graph-id *graphs*)
   nil)
 
-;Aggiunge un nuovo vertice vertex-id al grafo graph-id.
+;;; new-vertex - aggiunge un nuovo vertice vertex-id al grafo graph-id.
 (defun new-vertex (graph-id vertex-id) 
   (setf (gethash (list vertex graph-id vertex-id) *vertices*)
         (list vertex graph-id vertex-id)))
 
-;Questa funzione torna una lista di vertici del grafo.
+;;; graph-vertices - ritorna una lista di vertici del grafo.
+(defun graph-vertices (graph-id)
+  (let ((key-list ()) (value-list ()))
+    (maphash (lambda (key value))
+      (if ((equal second key) graph-id)
+        (push key key-list)
+        (push value value-list)
+      )
+      *vertices*
+    )
+    value-list
+  )
+)
 
+(defun new-edge (graph-id vertex-id vertex2-id &optional weight)
+  ; controllo se esistano i veritici nel grafo
+  (gethash graph-id *graphs*)
+  (and ((gethash vertex-id *vertices*) (equal (first vertex-id ) graph-id)))
+  (and ((gethash vertex2-id *vertices*) (equal (first vertex2-id ) graph-id)))
 
+  (setf gethash (list edge graph-id vertex-id vertex2-id weight) *edges*)
+        (list edge graph-id vertex-id vertex2-id weight)
+)
+  
