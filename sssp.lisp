@@ -1,9 +1,9 @@
-(defparameter *vertices* (make-hash-table :test #’equal))
-(defparameter *edges* (make-hash-table :test #’equal))
-(defparameter *graphs* (make-hash-table :test #’equal))
-(defparameter *visited* (make-hash-table :test #’equal))
-(defparameter *distances* (make-hash-table :test #’equal))
-(defparameter *previous* (make-hash-table :test #’equal))
+(defparameter *vertices* (make-hash-table :test #'equal))
+(defparameter *edges* (make-hash-table :test #'equal))
+(defparameter *graphs* (make-hash-table :test #'equal))
+(defparameter *visited* (make-hash-table :test #'equal))
+(defparameter *distances* (make-hash-table :test #'equal))
+(defparameter *previous* (make-hash-table :test #'equal))
 
 (defun is-graph (graph-id)
  ;; graph-id è un atomo: un simbolo (non NIL) o un intero.
@@ -15,7 +15,7 @@
  (setf (gethash graph-id *graphs*) graph-id)))
 
 (defun delete-graph (graph-id)
-  ;; Rimuove l’intero grafo dal sistema
+  ;; Rimuove l'intero grafo dal sistema
   (remhash graph-id *vertices*)
   (remhash graph-id *graphs*)
   (remhash graph-id *edges*)
@@ -24,8 +24,8 @@
 (defun new-vertex (graph-id vertex-id)
  ;; graph-id è un atomo: un simbolo (non NIL) o un intero.
  ;; vertex-id pure.
- (setf (gethash (list ’vertex graph-id vertex-id)*vertices*))
- (list ’vertex graph-id vertex-id))
+ (setf (gethash (list 'vertex graph-id vertex-id)*vertices*))
+ (list 'vertex graph-id vertex-id))
 
 (defun graph-vertices (graph-id)
   ;; Ottiene il grafo dalla hash-table *graphs*
@@ -70,8 +70,10 @@
         ;; Se non ci sono archi che partono da vertex-id, restituisce NIL
         (if (not edges)
             NIL
-          ;; Altrimenti, filtra la lista degli archi per includere solo quelli che partono da vertex-id
-          (remove-if-not (lambda (edge) (equal (second edge) vertex-id)) edges))))))
+          ;; Altrimenti, filtra la lista degli archi per includere solo quelli
+          ;; che partono da vertex-id
+          (remove-if-not (lambda (edge) 
+            (equal (second edge) vertex-id)) edges))))))
 
 
 ;; CODICE LUCA
