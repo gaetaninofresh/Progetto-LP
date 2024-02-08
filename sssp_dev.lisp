@@ -5,7 +5,7 @@
 (defparameter *visited* (make-hash-table :test #'equal))
 (defparameter *distances* (make-hash-table :test #'equal))
 (defparameter *previous* (make-hash-table :test #'equal))
-
+(defparameter *heaps* (make-hash-table :test #'equal))
 
 ;;; is-graph - ritorna il graph-id stesso.
 (defun is-graph (graph-id)
@@ -92,7 +92,7 @@
 )
 
 
-(defun graph-printb (graph-id)
+(defun graph-print (graph-id)
    (maphash 
         (lambda (key value)
             (and  
@@ -113,6 +113,59 @@
     )
 )
 
+(defun new-heap (heap-id &optional (capacity 42))
+    (or (gethash heap-id *heaps*)
+        (setf (gethash heap-id *heaps*)
+            (list 'heap heap-id 0 (make-array capacity))
+        )
+    )
+)
+
+(defun get-heap-id (heap-rep)
+    (second heap-rep)
+)
+
+(defun get-heap-size (heap-id)
+    (third (gethash heap-id *heaps*))
+)
+
+(defun get-actual-heap (heap-id)
+    (fourth (gethash heap-id *heaps*))
+)
+
+(defun heap-delete (heap-id)
+    (remhash heap-id *heaps*)
+)
+
+(defun heap-empty (heap-id)
+    (= (get-heap-size heap-id) 0)
+)
+
+(defun heap-not-empty (heap-id)
+    (not (heap-empty heap-id))
+)
+
+
+(defun heap-insert (heap-id key value)
+    ;; inserisce l'elemento in ultima posizione
+    (setf (aref 
+            (get-actual-heap heap-id) 
+            (get-heap-size heap-id)
+        )
+        (list key value)
+    )
+    
+    ;; aggiorna dimensione heap
+    (setf (gethash heap-id *heaps*)
+        (list
+            'heap
+            heap-id
+            (+ (get-heap-size heap-id) 1)
+            (get-actual-heap heap-id) 
+        )
+    )
+    ;; chiamare heapify sull'ultimo elemento
+)
 
 ;;; TEST
 
