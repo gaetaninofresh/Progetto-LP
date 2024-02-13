@@ -164,7 +164,56 @@
             (get-actual-heap heap-id) 
         )
     )
-    ;; chiamare heapify sull'ultimo elemento
+    ;; chiama heapify sull'ultimo elemento
+    (heapify heap-id (get-heap-size heap-id))
+)
+
+
+(defun heapify (heap-id start-pos)
+    
+    (if (equal start-pos 0) 
+        T
+    ;else
+        (let (
+            (element (aref (get-actual-heap heap-id) start-pos))
+            (parent (aref (get-actual-heap heap-id) 
+            (get-parent-index start-pos))))
+
+            (if (< (first element) (first parent))
+                (progn
+                    (swap heap-id start-pos (get-parent-index start-pos))
+                    (heapify heap-id (get-parent-index start-pos))
+                )
+            ;else
+                (heapify heap-id (get-parent-index start-pos))
+            )
+        )
+    )
+)
+
+;;; FUNZIONI AGGIUNTIVE
+
+(defun get-parent-index (index)
+    
+    (if (<= index 1)
+        0
+    ;else
+        (floor (/ index 2))
+    )
+)
+
+
+(defun swap (heap-id index1 index2)
+    (let* (
+            (heap-array (get-actual-heap heap-id))
+            (element1 (aref heap-array index1))
+            (element2 (aref heap-array index2))
+        )
+      (print heap-array)
+        (setf(aref heap-array index1) element2)
+        (setf(aref heap-array index2) element1)
+    )
+    T
 )
 
 ;;; TEST
@@ -187,4 +236,20 @@
   (new-edge graph-id 'c 'e 9)
   (new-edge graph-id 'e 'f 1)
   (new-edge graph-id 'b 'f 5)
-  T)
+  T
+)
+
+(defun test-2 (heap-id)
+  (new-heap heap-id 12)
+  (heap-insert heap-id '4 'a)
+  (heap-insert heap-id '2 'b)
+  (heap-insert heap-id '7 'c)
+  (heap-insert heap-id '9 'd)
+  (heap-insert heap-id '3 'e)
+  (heap-insert heap-id '5 'f)
+  (heap-insert heap-id '1 'g)
+  (heap-insert heap-id '5 'h)
+
+  (print (get-actual-heap heap-id))
+  T
+)
