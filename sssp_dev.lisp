@@ -165,7 +165,7 @@
         )
     )
     ;; chiama heapify sull'ultimo elemento
-    (heapify heap-id (get-heap-size heap-id))
+    (heapify heap-id (- (get-heap-size heap-id) 1))
 )
 
 
@@ -180,7 +180,7 @@
             (get-parent-index start-pos))))
 
             (if (< (first element) (first parent))
-                (progn
+                (progn   
                     (swap heap-id start-pos (get-parent-index start-pos))
                     (heapify heap-id (get-parent-index start-pos))
                 )

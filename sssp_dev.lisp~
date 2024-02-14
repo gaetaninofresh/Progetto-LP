@@ -166,7 +166,7 @@
     )
     ;; chiamare heapify sull'ultimo elemento
 
-    ;(heapify heap-id (get-heap-size heap-id))
+    (heapify heap-id (get-heap-size heap-id))
 )
 
 
@@ -175,7 +175,7 @@
     (print (get-actual-heap heap-id))
     
     (if (equal start-pos 0) 
-        NIL
+        T
     )
     ;else
         
@@ -201,7 +201,6 @@
         ;else
         (round (/ index 2))
     )
-    T
 )
 
 
