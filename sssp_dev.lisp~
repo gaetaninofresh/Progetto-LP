@@ -145,6 +145,10 @@
     (not (heap-empty heap-id))
 )
 
+(defun heap-head (heap-id) 
+    (aref (get-actual-heap heap-id) 0)
+)
+
 
 (defun heap-insert (heap-id key value)
     ;; inserisce l'elemento in ultima posizione
@@ -164,43 +168,62 @@
             (get-actual-heap heap-id) 
         )
     )
-    ;; chiamare heapify sull'ultimo elemento
-
-    (heapify heap-id (get-heap-size heap-id))
+    ;; chiama heapify sull'ultimo elemento
+    (heapify heap-id (- (get-heap-size heap-id) 1))
 )
 
 
 (defun heapify (heap-id start-pos)
-    
-    (print (get-actual-heap heap-id))
-    
     (if (equal start-pos 0) 
         T
-    )
     ;else
-        
-        (let ((element (aref (get-actual-heap heap-id) start-pos))
+        (let (
+            (element (aref (get-actual-heap heap-id) start-pos))
             (parent (aref (get-actual-heap heap-id) 
             (get-parent-index start-pos))))
 
             (if (< (first element) (first parent))
-                (swap heap-id start-pos (get-parent-index start-pos))
+                (progn   
+                    (swap heap-id start-pos (get-parent-index start-pos))
+                    (heapify heap-id (get-parent-index start-pos))
+                )
+            ;else
+                (heapify heap-id (get-parent-index start-pos))
             )
-            (heapify heap-id (get-parent-index start-pos))
         )
- 
+    )
 )
+
+(defun heap-extract (heap-id)
+    (setf head (heap-head heap-id))
+    (setf (aref (get-actual-heap heap-id) 0) '(NIL NIL))
+    (swap (get-heap-size heap-id) 0)
+
+    ;reduce heap size
+    (setf (gethash heap-id *heaps*)
+        (list
+            'heap
+            heap-id
+            (- (get-heap-size heap-id) 1)
+            (get-actual-heap heap-id) 
+        )
+    )
+
+    (heapify (get-heap-size heap-id))
+
+)
+
+
+
+
+
+(defun extract ())
 
 
 ;;; FUNZIONI AGGIUNTIVE
 
 (defun get-parent-index (index)
-    
-    (if (<= index 1)
-        1
-        ;else
-        (round (/ index 2))
-    )
+    (floor (/ index 2))
 )
 
 

@@ -145,6 +145,10 @@
     (not (heap-empty heap-id))
 )
 
+(defun heap-head (heap-id) 
+    (aref (get-actual-heap heap-id) 0)
+)
+
 
 (defun heap-insert (heap-id key value)
     ;; inserisce l'elemento in ultima posizione
@@ -170,7 +174,6 @@
 
 
 (defun heapify (heap-id start-pos)
-    
     (if (equal start-pos 0) 
         T
     ;else
@@ -191,15 +194,38 @@
     )
 )
 
+(defun heap-extract (heap-id)
+    (setf head (heap-head heap-id))
+    (setf (aref (get-actual-heap heap-id) 0) NIL))
+    (swap heap-id (- (get-heap-size heap-id) 1) 0)
+
+    ;reduce heap size
+    (setf (gethash heap-id *heaps*)
+        (list
+            'heap
+            heap-id
+            (- (get-heap-size heap-id) 1)
+            (get-actual-heap heap-id) 
+        )
+    )
+
+    (heapify heap-id (- (get-heap-size heap-id) 1))
+
+    head
+
+)
+
+
+
+
+
+(defun extract ())
+
+
 ;;; FUNZIONI AGGIUNTIVE
 
 (defun get-parent-index (index)
-    
-    (if (<= index 1)
-        0
-    ;else
-        (floor (/ index 2))
-    )
+    (floor (/ index 2))
 )
 
 
@@ -209,7 +235,6 @@
             (element1 (aref heap-array index1))
             (element2 (aref heap-array index2))
         )
-      (print heap-array)
         (setf(aref heap-array index1) element2)
         (setf(aref heap-array index2) element1)
     )
