@@ -169,7 +169,7 @@
         )
     )
     ;; chiama heapify sull'ultimo elemento
-    (heapify heap-id (- (get-heap-size heap-id) 1))
+    ;(heapify heap-id (- (get-heap-size heap-id) 1))
 )
 
 
@@ -192,27 +192,26 @@
             )
         )
     )
+    (format t "~S ~%" (get-actual-heap heap-id))
 )
 
 (defun heap-extract (heap-id)
-    (setf head (heap-head heap-id))
-    (setf (aref (get-actual-heap heap-id) 0) NIL))
-    (swap heap-id (- (get-heap-size heap-id) 1) 0)
+    (let* ((head (heap-head heap-id)))
+        (setf (aref (get-actual-heap heap-id) 0) NIL)
+        (swap heap-id (- (get-heap-size heap-id) 1) 0)
 
-    ;reduce heap size
-    (setf (gethash heap-id *heaps*)
-        (list
-            'heap
-            heap-id
-            (- (get-heap-size heap-id) 1)
-            (get-actual-heap heap-id) 
+        ;reduce heap size
+        (setf (gethash heap-id *heaps*)
+            (list
+                'heap
+                heap-id
+                (- (get-heap-size heap-id) 1)
+                (get-actual-heap heap-id) 
+            )
         )
+        (heapify heap-id (- (get-heap-size heap-id) 1))
+        head
     )
-
-    (heapify heap-id (- (get-heap-size heap-id) 1))
-
-    head
-
 )
 
 
@@ -273,7 +272,7 @@
   (heap-insert heap-id '3 'e)
   (heap-insert heap-id '5 'f)
   (heap-insert heap-id '1 'g)
-  (heap-insert heap-id '5 'h)
+  ;(heap-insert heap-id '5 'h)
 
   (print (get-actual-heap heap-id))
   T
