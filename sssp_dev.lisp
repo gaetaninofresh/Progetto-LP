@@ -149,6 +149,10 @@
     (aref (get-actual-heap heap-id) 0)
 )
 
+(defun heap-print (heap-id)
+  (print (gethash heap-id *heaps*)) t)
+
+
 
 (defun heap-insert (heap-id key value)
     ;; inserisce l'elemento in ultima posizione
