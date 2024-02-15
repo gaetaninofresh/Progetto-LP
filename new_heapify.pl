@@ -10,14 +10,12 @@
 
 
 
-% nodo foglia
 heapify(H, Node) :-
     heap_entry(H, Node, _, _),
     heap_size(H, Size),
     left_child(Node, Left),
     Left > Size, !.
 
-% figlio unico - figlio >= padre
 heapify(H, Node) :-
     heap_entry(H, Node, NodeK, _),
     heap_size(H, Size),
@@ -26,7 +24,6 @@ heapify(H, Node) :-
     heap_entry(H, Left, LeftK, _),
     LeftK >= NodeK, !.
 
-% singolo figlio - figlio < padre
 heapify(H, Node) :-
     heap_entry(H, Node, NodeK, _),
     heap_size(H, Size),
@@ -37,7 +34,6 @@ heapify(H, Node) :-
     swap(H, Node, Left),
     heapify(H, Left), !.
 
-% due figli - figli >= padre
 heapify(H, Node) :-
     heap_entry(H, Node, NodeK, _),
     left_child(Node, Left),
@@ -47,7 +43,6 @@ heapify(H, Node) :-
     heap_entry(H, Right, RightK, _),
     RightK >= NodeK, !.
 
-% due figli - figlio 1 >= padre e figlio 2 < padre
 heapify(H, Node) :-
     heap_entry(H, Node, NodeK, _),
     left_child(Node, Left),
@@ -59,7 +54,6 @@ heapify(H, Node) :-
     swap(H, Node, Right),
     heapify(H, Right), !.
 
-% due figli - figlio 1 < padre e figlio 2 >= padre
 heapify(H, Node) :-
     heap_entry(H, Node, NodeK, _),
     left_child(Node, Left),
@@ -71,7 +65,6 @@ heapify(H, Node) :-
     swap(H, Node, Left),
     heapify(H, Left), !.
 
-% due figli - figlio 1 < padre e figlio 2 < padre (figlio 1 =< figlio 2)
 heapify(H, Node) :-
     heap_entry(H, Node, NodeK, _),
     left_child(Node, Left),
@@ -84,7 +77,6 @@ heapify(H, Node) :-
     swap(H, Node, Left),
     heapify(H, Left), !.
 
- % due figli - figlio 1 < padre e figlio 2 < padre (figlio 2 < figlio 1)
 heapify(H, Node) :-
     heap_entry(H, Node, NodeK, _),
     left_child(Node, Left),
@@ -150,7 +142,7 @@ insert(H, K, V) :-
     assert(heap_entry(H, NewS, K, V)),
     
     get_parent_index(NewS, P),
-    heapify(H, P). 
+    heapify(H, 1). 
 
 % extract(H, K, V) - è vero quando la coppia K, V con K minima, è rimossa 
 % dallo heap H
@@ -168,7 +160,7 @@ extract(H, K, V) :-
     NewS is S - 1,
     assert(heap(H, NewS)),
     
-    heapify(H, NewS).
+    heapify(H, 1).
 
 % modify_key(H, NewK, OldK, V) - è vero quando la chiave OldKey 
 % (associata al valore V) è sostituita
@@ -180,7 +172,7 @@ modify_key(H, NewK, OldK, V) :-
     retract(heap_entry(H, P, OldK, V)),
     assert(heap_entry(H, P, NewK, V)),
     heap(H, S),
-    heapify(H, S).
+    heapify(H, 1).
 
 list_heap(H) :-
     listing(heap_entry(H, _I, _K, _V)).
