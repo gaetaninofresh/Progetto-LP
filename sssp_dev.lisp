@@ -176,29 +176,6 @@
     ;(heapify heap-id (- (get-heap-size heap-id) 1))
 )
 
-
-(defun heapify (heap-id start-pos)
-    (if (equal start-pos 0) 
-        T
-    ;else
-        (let (
-            (element (aref (get-actual-heap heap-id) start-pos))
-            (parent (aref (get-actual-heap heap-id) 
-            (get-parent-index start-pos))))
-
-            (if (< (first element) (first parent))
-                (progn   
-                    (swap heap-id start-pos (get-parent-index start-pos))
-                    (heapify heap-id (get-parent-index start-pos))
-                )
-            ;else
-                (heapify heap-id (get-parent-index start-pos))
-            )
-        )
-    )
-    (format t "~S ~%" (get-actual-heap heap-id))
-)
-
 (defun heap-extract (heap-id)
     (let* ((head (heap-head heap-id)))
         (setf (aref (get-actual-heap heap-id) 0) NIL)
@@ -220,17 +197,19 @@
 
 
 
-
-
-(defun extract ())
-
-
 ;;; FUNZIONI AGGIUNTIVE
 
 (defun get-parent-index (index)
     (floor (/ index 2))
 )
 
+(defun left-child (index)
+    (+ (* index 2) 1)
+)
+
+(defun right-child (index)
+    (+ (* index 2) 2)
+)
 
 (defun swap (heap-id index1 index2)
     (let* (
@@ -242,6 +221,29 @@
         (setf(aref heap-array index2) element1)
     )
     T
+)
+
+
+(defun heapify (heap-id index)
+    (let 
+        (
+            (node (aref (get-actual-heap heap-id) index))
+            (left (aref (get-actual-heap heap-id) (left-child index)))
+            (right (aref (get-actual-heap heap-id) (right-child index)))
+        )
+        
+        ;caso base: il nodo è una foglia
+        (if (and (nil left) (nil right))
+            T
+        )
+        ;caso solo figlio sinistro
+        (if (nil right)
+            (if (< (first node) (first left))
+                (swap heap-id index (left-child index))
+            )
+        )
+
+    )
 )
 
 ;;; TEST
