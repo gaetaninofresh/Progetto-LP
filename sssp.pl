@@ -149,7 +149,8 @@ insert(H, K, V) :-
     NewS is S + 1,
     assert(heap(H, NewS)),
     
-    assert(heap_entry(H, NewS, K, V)).
+    assert(heap_entry(H, NewS, K, V)),
+    heapify(H, NewS).
 
 % extract(H, K, V) - è vero quando la coppia K, V con K minima, è rimossa 
 % dallo heap H
@@ -324,73 +325,6 @@ heapify(H, I) :-
     heapify(H, Ip).
 
 
-/*
-heapify2(H, Node) :-
-    heap_size(H, S),
-    get_parent_index(Node, Parent),
-    left_son(Node, Left),
-    right_son(Node, Right),
-    Left > S,
-    Right > S,
-    !.
-*/
-
-
-heapify2(H, 0) :- heap(H, _), !.
-
-heapify2(H, Node) :-
-    heap(H, _),
-    heap_entry(H, Node, NodeK, _V),
-    
-    left_son(Node, Left),
-    heap_entry(H, Left, LeftK, _Vp),
-    
-    NodeK =< LeftK,
-    get_parent_index(Node, NodeParent),
-    heapify(H, NodeParent), !.
-
-heapify2(H, Node) :-
-    heap(H, _),    
-    heap_entry(H, Node, NodeK, _V),
-    
-    right_son(Node, Right),
-    heap_entry(H, Right, RightK, _Vp),
-    
-    NodeK =< RightK,
-    get_parent_index(Node, NodeParent),
-    heapify(H, NodeParent), !.
-
-
-heapify2(H, Node) :-
-    heap(H, _),
-    heap_entry(H, Node, NodeK, _V),
-
-    
-    
-    left_son(Node, Left),
-    heap_entry(H, Left, LeftK, _Vp),
-    
-    NodeK > LeftK,
-    swap(H, Node, Left),
-    get_parent_index(Node, NodeParent),
-    heapify(H, NodeParent), !.
-
-heapify2(H, Node) :-
-    heap(H, _),
-    heap_entry(H, Node, NodeK, _V),
-    
-    right_son(Node, Right),
-    heap_entry(H, Right, RightK, _Vp),
-    
-    NodeK > RightK,
-    swap(H, Node, Right),
-    get_parent_index(Node, NodeParent),
-    heapify(H, NodeParent), !.
-
-
-
-
-
 % scambia i nodi nell'heap H con indice I e IP 
 swap(H, I, I) :- heap(H, _).
 
@@ -440,7 +374,6 @@ right_son(Pi, I) :-
 % TEST
 :- initialization (
     (
-        
         new_heap(h),
         insert(h, 4, a),
         insert(h, 2, b),
@@ -449,7 +382,7 @@ right_son(Pi, I) :-
         insert(h, 3, e),
         insert(h, 5, f),
         insert(h, 1, g),
-        insert(h, 5, i),
+        %insert(h, 5, i),
         list_heap(h)
 
         /*
