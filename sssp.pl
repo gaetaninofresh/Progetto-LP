@@ -129,8 +129,7 @@ head(H, K, V) :-
     heap_entry(H, 1, K, V).
 
 % insert(H, K, V) - è vero quando l’elemento V è inserito 
-% nello heap H con chiave K; DEPRECATED(nel caso in cui la chiave sia già presente 
-% sostituisce il vecchio valore), non fa nulla se proviamo a reinserire la 
+% nello heap H con chiave K; non fa nulla se proviamo a reinserire la 
 % stessa coppia (K, V)
 
 insert(H, K, V) :-
@@ -150,7 +149,7 @@ insert(H, K, V) :-
     assert(heap(H, NewS)),
     
     assert(heap_entry(H, NewS, K, V)),
-    heapify(H, NewS).
+    heapify_up(H, NewS), !.
 
 % extract(H, K, V) - è vero quando la coppia K, V con K minima, è rimossa 
 % dallo heap H
@@ -160,7 +159,6 @@ extract(H, _, _) :-
 extract(H, K, V) :-
     heap_size(H, S),
     swap(H, 1, S),
-
     retract(heap_entry(H, S, K, V)),
 
     % aggiorna la dimensione dello heap
@@ -168,7 +166,8 @@ extract(H, K, V) :-
     NewS is S - 1,
     assert(heap(H, NewS)),
     
-    heapify(H, NewS).
+    heapify_up(H, NewS),
+    heapify(H, 1), !.
 
 % modify_key(H, NewK, OldK, V) - è vero quando la chiave OldKey 
 % (associata al valore V) è sostituita
@@ -180,7 +179,8 @@ modify_key(H, NewK, OldK, V) :-
     retract(heap_entry(H, P, OldK, V)),
     assert(heap_entry(H, P, NewK, V)),
     heap(H, S),
-    heapify(H, S).
+    heapify_up(H, S),
+    heapify(H, 1), !.
 
 list_heap(H) :-
     listing(heap_entry(H, _I, _K, _V)).
@@ -286,7 +286,7 @@ shortest_path(G, Source, V, Path) :-
     previous(G, V, Prev),
     edge(G, Prev, V, W),
     shortest_path(G, Source, Prev, PrevPath),
-    append([edge(G, Prev, V, W)], PrevPath, Path), !.
+    append(PrevPath, [edge(G, Prev, V, W)], Path), !.
 
 % PREDICATI AGGIUNTIVI
 
@@ -301,29 +301,100 @@ get_parent_index(I, Pi) :-
     Pi is I div 2.
 
 
-% implementazione delll'algoritmo di heapify
-heapify(H, 0) :- heap(H, _), true, !.
-% heapify(H, 1) :- heap(H, _), true, !.
+% implementazione delll'algoritmo di heapify e heapify_up
+heapify(H, Node) :-
+    heap_entry(H, Node, _, _),
+    heap_size(H, Size),
+    left_child(Node, Left),
+    Left > Size, !.
+
+heapify(H, Node) :-
+    heap_entry(H, Node, NodeK, _),
+    heap_size(H, Size),
+    left_child(Node, Left),
+    Left = Size,
+    heap_entry(H, Left, LeftK, _),
+    LeftK >= NodeK, !.
+
+heapify(H, Node) :-
+    heap_entry(H, Node, NodeK, _),
+    heap_size(H, Size),
+    left_child(Node, Left),
+    Left = Size,
+    heap_entry(H, Left, LeftK, _),
+    LeftK < NodeK,
+    swap(H, Node, Left),
+    heapify(H, Left), !.
+
+heapify(H, Node) :-
+    heap_entry(H, Node, NodeK, _),
+    left_child(Node, Left),
+    heap_entry(H, Left, LeftK, _),
+    LeftK >= NodeK,
+    right_child(Node, Right),
+    heap_entry(H, Right, RightK, _),
+    RightK >= NodeK, !.
+
+heapify(H, Node) :-
+    heap_entry(H, Node, NodeK, _),
+    left_child(Node, Left),
+    heap_entry(H, Left, LeftK, _),
+    LeftK >= NodeK,
+    right_child(Node, Right),
+    heap_entry(H, Right, RightK, _),
+    RightK < NodeK,
+    swap(H, Node, Right),
+    heapify(H, Right), !.
+
+heapify(H, Node) :-
+    heap_entry(H, Node, NodeK, _),
+    left_child(Node, Left),
+    heap_entry(H, Left, LeftK, _),
+    LeftK < NodeK,
+    right_child(Node, Right),
+    heap_entry(H, Right, RightK, _),
+    RightK >= NodeK,
+    swap(H, Node, Left),
+    heapify(H, Left), !.
+
+heapify(H, Node) :-
+    heap_entry(H, Node, NodeK, _),
+    left_child(Node, Left),
+    heap_entry(H, Left, LeftK, _),
+    LeftK < NodeK,
+    right_child(Node, Right),
+    heap_entry(H, Right, RightK, _),
+    RightK < NodeK,
+    LeftK =< RightK,
+    swap(H, Node, Left),
+    heapify(H, Left), !.
+
+heapify(H, Node) :-
+    heap_entry(H, Node, NodeK, _),
+    left_child(Node, Left),
+    heap_entry(H, Left, LeftK, _),
+    LeftK < NodeK,
+    right_child(Node, Right),
+    heap_entry(H, Right, RightK, _),
+    RightK < NodeK,
+    LeftK > RightK,
+    swap(H, Node, Right),
+    heapify(H, Right), !.
 
 
-heapify(H, I) :-
-    heap(H, _),
-    get_parent_index(I, Ip),
+heapify_up(_, 1) :- !.
+heapify_up(H, Node) :-
+    heap_entry(H, Node, NodeK, _),
+    get_parent_index(Node, Parent),
+    heap_entry(H, Parent, ParentK, _),
+    ParentK =< NodeK, !.
+
+heapify_up(H, Node) :-
+    heap_entry(H, Node, _, _),
+    get_parent_index(Node, Parent),
+    swap(H, Parent, Node),
+    heapify_up(H, Parent), !.
     
-    heap_entry(H, I, K, _V),
-    heap_entry(H, Ip, Pk, _Vp),
-    K > Pk, 
-    heapify(H, Ip).
-
-heapify(H, I) :-
-    heap(H, _),
-    get_parent_index(I, Ip),
-    heap_entry(H, I, K, _V),
-    heap_entry(H, Ip, Pk, _Vp),
-    K < Pk,
-    swap(H, I, Ip),
-    heapify(H, Ip).
-
 
 % scambia i nodi nell'heap H con indice I e IP 
 swap(H, I, I) :- heap(H, _).
@@ -364,10 +435,10 @@ dijkstra_check_cost(G, V, Prev, R) :-
     R = OldDist, !.
 
 
-left_son(Pi, I) :-
+left_child(Pi, I) :-
     I is 2 * Pi.
 
-right_son(Pi, I) :-
+right_child(Pi, I) :-
     I is 2 * Pi + 1.
 
 
@@ -383,9 +454,9 @@ right_son(Pi, I) :-
         insert(h, 5, f),
         insert(h, 1, g),
         %insert(h, 5, i),
-        list_heap(h)
+        list_heap(h),
 
-        /*
+        
         new_graph(g),
         new_vertex(g, a),
         new_vertex(g, b),
@@ -417,9 +488,9 @@ right_son(Pi, I) :-
         new_edge(g, vertex(g, f), vertex(g, a), 3),
         
         new_edge(g, vertex(g, c), vertex(g, h), 1),
-        new_edge(g, vertex(g, h), vertex(g, c), 1)
+        new_edge(g, vertex(g, h), vertex(g, c), 1),
         
         list_edges(g)
-        */
+        
     )
 ).
