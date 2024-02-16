@@ -174,15 +174,15 @@
 )
 
 (defun modify-key (heap-id new-key old-key value)
-    ;; verifico che l'heap non sia vuoto
-    (if (heap-not-empty heap-id)
-        ;; modifico la vecchia chiave con la nuova
-        (let ((node (find-node heap-id old-key V)))
-            (when node
-                ;; modifico la vecchia chiave con la nuova
-                (setf (node-key node) new-key)
-                ;; chiamo la heapify
-                (heapify heap-id node)
+    (let ((index (find-node heap-id old-key value 0)))
+        (if (null )
+            NIL
+        ;else
+            (progn
+                (setf (aref (get-actual-heap heap-id) index) 
+                (list new-key value))
+                (heapify-up heap-id index)
+                (heapify heap-id 1)
                 T
             )
         )
