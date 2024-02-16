@@ -224,28 +224,6 @@
 )
 
 
-(defun heapify (heap-id index)
-    (let 
-        (
-            (node (aref (get-actual-heap heap-id) index))
-            (left (aref (get-actual-heap heap-id) (left-child index)))
-            (right (aref (get-actual-heap heap-id) (right-child index)))
-        )
-        
-        ;caso base: il nodo è una foglia
-        (if (and (nil left) (nil right))
-            T
-        )
-        ;caso solo figlio sinistro
-        (if (nil right)
-            (if (< (first node) (first left))
-                (swap heap-id index (left-child index))
-            )
-        )
-
-    )
-)
-
 ;;; TEST
 
 (defun test-1 (graph-id)
