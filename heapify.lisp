@@ -1,3 +1,11 @@
+(defparameter *vertices* (make-hash-table :test #'equal))
+(defparameter *edges* (make-hash-table :test #'equal))
+(defparameter *graphs* (make-hash-table :test #'equal))
+(defparameter *visited* (make-hash-table :test #'equal))
+(defparameter *distances* (make-hash-table :test #'equal))
+(defparameter *previous* (make-hash-table :test #'equal))
+(defparameter *heaps* (make-hash-table :test #'equal))
+
 (defun heapify (heap-id index)
     (let 
         (
@@ -7,14 +15,14 @@
         )
         
         ;caso base: il nodo è una foglia
-        (if (and (nil left) (nil right))
+        (if (and (null left) (null right))
             T
         )
 
         ;caso solo figlio sinistro
-        (if (nil right)
+        (if (null right)
             (if (> (first node) (first left))
-                (
+                (progn
                     (swap heap-id index (left-child index))
                     (heapify heap-id (left-child index))
                 )
@@ -22,9 +30,9 @@
         )
 
         ;caso figlio destro minore 
-        (if(and(not(nil right))(not(nil left)))
+        (if(and(not(null right))(not(null left)))
             (if(and(<= (first node) (first left))(> (first node) (first right)))
-                (
+                (progn
                     (swap heap-id index (right-child index))
                     (heapify heap-id (right-child index))
                 )
@@ -32,9 +40,9 @@
         )
 
         ;caso figlio sinistro minore
-        (if(and(not(nil right))(not(nil left)))
+        (if(and(not(null right))(not(null left)))
             (if(and(<= (first node) (first right))(> (first node) (first left)))
-                (
+                (progn
                     (swap heap-id index (left-child index))
                     (heapify heap-id (left-child index))
                 )
@@ -42,16 +50,16 @@
         )
 
         ; caso entrambi minori
-        (if(and(not(nil right))(not(nil left)))
+        (if(and(not(null right))(not(null left)))
             (if(and(> (first node) (first left))(> (first node) (first right)))
                 (if(> (first right) (first left))
-                    (
-                        (swap head-id index (left-child index))
+                    (progn
+                        (swap heap-id index (left-child index))
                         (heapify heap-id (left-child index))
                     )
                    ;else
-                    (
-                        (swap head-id index (right-child index))
+                    (progn
+                        (swap heap-id index (right-child index))
                         (heapify heap-id (right-child index))
                     )
                 )
@@ -61,23 +69,147 @@
 )
 
 
+(defun new-heap (heap-id &optional (capacity 42))
+    (or (gethash heap-id *heaps*)
+        (setf (gethash heap-id *heaps*)
+            (list 'heap heap-id 0 (make-array capacity))
+        )
+    )
+)
+
+(defun get-heap-id (heap-rep)
+    (second heap-rep)
+)
+
+(defun get-heap-size (heap-id)
+    (third (gethash heap-id *heaps*))
+)
+
+(defun get-actual-heap (heap-id)
+    (fourth (gethash heap-id *heaps*))
+)
+
+(defun heap-delete (heap-id)
+    (remhash heap-id *heaps*)
+)
+
+(defun heap-empty (heap-id)
+    (= (get-heap-size heap-id) 0)
+)
+
+(defun heap-not-empty (heap-id)
+    (not (heap-empty heap-id))
+)
+
+(defun heap-head (heap-id) 
+    (aref (get-actual-heap heap-id) 0)
+)
+
+(defun heap-print (heap-id)
+  (print (gethash heap-id *heaps*)) t)
+
+
+
+(defun heap-insert (heap-id key value)
+    ;; inserisce l'elemento in ultima posizione
+    (setf (aref 
+            (get-actual-heap heap-id) 
+            (get-heap-size heap-id)
+        )
+        (list key value)
+    )
+    
+    ;; aggiorna dimensione heap
+    (setf (gethash heap-id *heaps*)
+        (list
+            'heap
+            heap-id
+            (+ (get-heap-size heap-id) 1)
+            (get-actual-heap heap-id) 
+        )
+    )
+    ;; chiama heapify 
+    (heapify-up heap-id (- (get-heap-size heap-id) 1))
+)
+
+(defun heap-extract (heap-id)
+    (let* ((head (heap-head heap-id)))
+        (setf (aref (get-actual-heap heap-id) 0) NIL)
+        (swap heap-id (- (get-heap-size heap-id) 1) 0)
+
+        ;reduce heap size
+        (setf (gethash heap-id *heaps*)
+            (list
+                'heap
+                heap-id
+                (- (get-heap-size heap-id) 1)
+                (get-actual-heap heap-id) 
+            )
+        )
+        ;chiamata heapify
+        (heapify-up heap-id (- (get-heap-size heap-id) 1))
+        (heapify heap-id 1)
+        
+        ;return
+        head
+    )
+)
+
+(defun modify-key (heap-id new-key old-key value)
+    (let* 
+        (
+            (heap-array (get-actual-heap heap-id))
+            (old-entry (find (list old-key value) heap-array))
+        )
+        (print old-entry)
+    )
+    T
+)
+
+
+
 (defun heapify-up (heap-id index)
     
     (let (
-            (node (aref (get-actual-heap heapid) index))
-            (parent (aref (get-actual-heap heapid) (get-parent-index index)))
+            (node (aref (get-actual-heap heap-id) index))
+            (parent (aref (get-actual-heap heap-id) (get-parent-index index)))
         )
         ;caso base
         (if (or (= index 0) (>= (first node) (first parent)))
             T
             ;else
-            (
+            (progn
                 (swap heap-id index (get-parent-index index))
                 (heapify-up heap-id (get-parent-index index))
             )
         )
 
     )
+)
+
+
+(defun get-parent-index (index)
+    (floor (/ index 2))
+)
+
+(defun left-child (index)
+    (+ (* index 2) 1)
+)
+
+(defun right-child (index)
+    (+ (* index 2) 2)
+)
+
+(defun swap (heap-id index1 index2)
+    (let* (
+            (heap-array (get-actual-heap heap-id))
+            (element1 (aref heap-array index1))
+            (element2 (aref heap-array index2))
+        )
+        (setf(aref heap-array index1) element2)
+        (setf(aref heap-array index2) element1)
+    )
+    T
 )
 
 
@@ -91,8 +223,16 @@
   (heap-insert heap-id '3 'e)
   (heap-insert heap-id '5 'f)
   (heap-insert heap-id '1 'g)
-  ;(heap-insert heap-id '5 'h)
+  (heap-insert heap-id '5 'h)
 
+  (print (get-actual-heap heap-id))
+  T
+)
+
+(defun test-1 (heap-id)
+  (heapify-up heap-id 6)
+  (print (get-actual-heap heap-id))
+  (heapify heap-id 1)
   (print (get-actual-heap heap-id))
   T
 )
