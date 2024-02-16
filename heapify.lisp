@@ -156,16 +156,40 @@
     )
 )
 
-(defun modify-key (heap-id new-key old-key value)
-    (let* 
-        (
-            (heap-array (get-actual-heap heap-id))
-            (old-entry (find (list old-key value) heap-array))
+;; Migliorabile esplorando l'heap 
+(defun find-node (heap-id key value index)
+    (if (> index (get-heap-size heap-id))
+        NIL
+        ;; else
+        (if (and
+                (equal key (first (aref (get-actual-heap heap-id) index))) 
+                (equal value (second (aref (get-actual-heap heap-id) index))) 
+            )
+            index
+
+            ;; else
+            (find-node heap-id key value (+1 index))
         )
-        (print old-entry)
     )
-    T
 )
+
+(defun modify-key (heap-id new-key old-key value)
+    ;; verifico che l'heap non sia vuoto
+    (if (heap-not-empty heap-id)
+        ;; modifico la vecchia chiave con la nuova
+        (let ((node (find-node heap-id old-key V)))
+            (when node
+                ;; modifico la vecchia chiave con la nuova
+                (setf (node-key node) new-key)
+                ;; chiamo la heapify
+                (heapify heap-id node)
+                T
+            )
+        )
+    )
+)
+
+
 
 
 
