@@ -106,8 +106,9 @@
 )
 
 (defun heap-print (heap-id)
-  (print (gethash heap-id *heaps*)) t)
-
+  (print (gethash heap-id *heaps*)) 
+  T
+)
 
 
 (defun heap-insert (heap-id key value)
