@@ -442,12 +442,12 @@
         ;; distanza tra vertice2 e sorgente
         (OldCost (sssp-dist graph-id v))
         ;; costo arco prev v
-        (newDist (get-costs graph-id prev v )))
-      ;;controlla se la distanza corrente è maggiore di (prevCost e newdist)
-      (if (> OldCost (+ prevCost newdist))
+        (newDist (gethash (list graph-id prev v 1) *edges*)))
+      ;;controlla se la distanza corrente è maggiore di (prevCost e newDist)
+      (if (> OldCost (+ prevCost newDist))
           (progn 
             ;; aggiorna la distanza
-            (sssp-change-dist graph-id v (+ prevcost newDist))
+            (sssp-change-dist graph-id v (+ prevCost newDist))
             ;; mette prev come vertice precedente
             (sssp-change-previous graph-id prev v)
           )
@@ -455,8 +455,6 @@
   )
 )
 
-(defun get-costs (graph-id u v)
-  (gethash (list graph-id u v) *edges*))
 
 
 ;;; !!! aggiungere hah table (defparameter *costs* (make-hash-table :test #'equal)) !!!
