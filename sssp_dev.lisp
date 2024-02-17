@@ -425,6 +425,30 @@
     )
 )
 
+(defun dijkstra-check-cost (graph-id prev v)
+  ;; distanza tra vertice1 e sorgente
+  (let ((prevCost (sssp-dist graph-id prev))
+        ;; distanza tra vertice2 e sorgente
+        (OldCost (sssp-dist graph-id v))
+        ;; costo arco prev v
+        (newDist (get-costs graph-id prev v )))
+      ;;controlla se la distanza corrente è maggiore di (prevCost e newdist)
+      (if (> OldCost (+ prevCost newdist))
+          (progn 
+            ;; aggiorna la distanza
+            (sssp-change-dist graph-id v (+ prevcost newDist))
+            ;; mette prev come vertice precedente
+            (sssp-change-previous graph-id prev v)
+          )
+      )
+  )
+)
+
+(defun get-costs (graph-id u v)
+  (gethash (list graph-id u v) *costs*))
+
+!!! aggiungere hah table (defparameter *costs* (make-hash-table :test #'equal)) !!!
+
 
 ;;; TEST
 
