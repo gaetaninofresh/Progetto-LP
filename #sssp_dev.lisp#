@@ -254,7 +254,7 @@
     (let ((node (gethash (list 'vertex graph-id source) *vertices*)))
     
         (new-heap 'dijkstra-heap)
-        (heap-insert 'dijkstra-heap (first node) (second node))
+        (heap-insert 'dijkstra-heap (get-) (node))
 
         (sssp-set-visited graph-id node) 
 
@@ -325,7 +325,7 @@
                         (right-child index)))
                 )
 
-                ;caso base: il nodo è una foglia
+                ;caso base: il nodo Ã¨ una foglia
 
                 (if (null left)
                     T

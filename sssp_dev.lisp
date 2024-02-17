@@ -251,14 +251,16 @@
 
 (defun sssp-dijkstra (graph-id source)
 
-    (let (node (gethash (list 'vertex graph-id source) *vertices*))
+    (let (
+            (node (gethash (list 'vertex graph-id source) *vertices*))
+        )
     
         (new-heap 'dijkstra-heap)
-        (heap-insert 'dijkstra-heap (first source) (second source))
+        (heap-insert 'dijkstra-heap (sssp-dist source) source)
 
-        (sssp-set-visited graph-id source)
+        (sssp-set-visited graph-id source) 
 
-        (dijkstra graph-id source)
+        (dijkstra graph-id node)
     )
 )
 
