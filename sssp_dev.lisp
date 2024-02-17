@@ -215,6 +215,68 @@
     )
 )
 
+;;; DIJKSTRA
+
+(defun sssp-dist (graph-id vertex-id)
+    (gethash (list graph-id vertex-id) *distances*)
+)
+
+(defun sssp-change-dist (graph-id vertex-id new-distance)
+    (setf (gethash (list graph-id vertex-id) *distances*) 
+        new-distance
+    )
+    NIL
+)
+
+(defun sssp-visited (graph-id vertex-id)
+    (null (gethash (list graph-id vertex-id) *visited*))
+    
+)
+
+(defun sssp-set-visited (graph-id vertex-id)
+    (setf (gethash (list graph-id vertex-id) *visited*) T)
+    NIL
+)
+
+(defun sssp-previous (graph-id vertex-id)
+    (gethash (list graph-id vertex-id) *visited*)
+)
+
+(defun sssp-change-previuos (graph-id vertex-id previous-id)
+    (setf (gethash (list graph-id vertex-id) *visited*) previous-id)
+    NIL
+)
+
+
+
+(defun sssp-dijkstra (graph-id source)
+
+    (let (node (gethash (list 'vertex graph-id source) *vertices*))
+    
+        (new-heap 'dijkstra-heap)
+        (heap-insert 'dijkstra-heap (first source) (second source))
+
+        (sssp-set-visited graph-id source)
+
+        (dijkstra graph-id source)
+    )
+)
+
+(defun dijkstra (graph-id source)
+    (sssp-set-visited graph-id source)
+    (heap-extract 'dijkstra-heap)
+
+    (let ((to-explore ()))
+        (maphash (lambda (key value)
+                (push (graph-vertex-neighbors graph-id value)
+                    to-explore
+                )
+            )
+        *visited*)
+    )
+)
+
+
 
 ;;; FUNZIONI AGGIUNTIVE
 
@@ -257,8 +319,10 @@
             (let
                 (
                     (node (aref (get-actual-heap heap-id) index))
-                    (left (aref (get-actual-heap heap-id) (left-child index)))
-                    (right (aref (get-actual-heap heap-id) (right-child index)))
+                    (left (aref (get-actual-heap heap-id)
+                        (left-child index)))
+                    (right (aref (get-actual-heap heap-id) 
+                        (right-child index)))
                 )
 
                 ;caso base: il nodo è una foglia
