@@ -443,9 +443,9 @@
 )
 
 (defun get-costs (graph-id u v)
-  (gethash (list graph-id u v) *costs*))
+  (gethash (list graph-id u v) *edges*))
 
-!!! aggiungere hah table (defparameter *costs* (make-hash-table :test #'equal)) !!!
+
 
 
 ;;; TEST
