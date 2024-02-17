@@ -47,7 +47,7 @@
 )
 
 ;;; new-edge - aggiunge un edge all'hashtable
-(defun new-edge (graph-id vertex-id vertex2-id &optional weight)
+(defun new-edge (graph-id vertex-id vertex2-id &optional (weight 1))
   ; controllo se esistano i veritici nel grafo
   (gethash graph-id *graphs*)
   (and (gethash vertex-id *vertices*) (equal (second vertex-id ) graph-id))
@@ -266,25 +266,36 @@
 )
 
 (defun dijkstra (graph-id vertex-id)
-    (sssp-set-visited graph-id vertex-id)
-    ;(heap-extract 'dijkstra-heap)
-    (let ((to-explore ()))
-        (maphash (lambda (key value)
-                (format t "key: ~S~%" key)
-                (and 
-                    (equal (first key) graph-id)
-                    (equal (second key) T)
+    
+    (if (heap-empty 'dijkstra-heaps)
+
+        T
+        ;else
+    
+        (sssp-set-visited graph-id vertex-id)
+        ;(heap-extract 'dijkstra-heap)
+        
+        (let ((to-explore ()))
+            (maphash (lambda (key value)
+                    (format t "key: ~S~%" key)
+                    (and 
+                        (equal (first key) graph-id)
+                        (equal (second key) T)
+                        (null (gethash key *visited*))
+                    )
+                    ; assegnamento necessario: se si usa append normalmente 
+                    ; to-explore viene distrutta, con push si crea una lista 
+                    ; nestata
+                    (setf to-explore (append 
+                    (graph-vertex-neighbors graph-id (second key)) 
+                    to-explore))
+                    (format t "value: ~S~%" value)
                 )
-                ;assegnamento necessario: se si usa append normalmente 
-                ;to-explore viene distrutta, con push si crea una lista nestata
-                (setf to-explore (append 
-                (graph-vertex-neighbors graph-id (second key)) 
-                to-explore))
-                (format t "value: ~S~%" value)
+                *visited*
             )
-            *visited*
+            (format t "to-explore: ~S~%" to-explore)
         )
-        (format t "to-explore: ~S~%" to-explore)
+
     )
 
 )
@@ -311,8 +322,8 @@
             (element1 (aref heap-array index1))
             (element2 (aref heap-array index2))
         )
-        (setf(aref heap-array index1) element2)
-        (setf(aref heap-array index2) element1)
+        (setf (aref heap-array index1) element2)
+        (setf (aref heap-array index2) element1)
     )
     T
 )
