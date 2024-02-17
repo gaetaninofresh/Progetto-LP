@@ -7,66 +7,79 @@
 (defparameter *heaps* (make-hash-table :test #'equal))
 
 (defun heapify (heap-id index)
-    (let 
+    (let
         (
-            (node (aref (get-actual-heap heap-id) index))
-            (left (aref (get-actual-heap heap-id) (left-child index)))
-            (right (aref (get-actual-heap heap-id) (right-child index)))
-        )
-        
-        ;caso base: il nodo è una foglia
-        (if (null left)
-            (progn
-            (print "base case")
-            T)
+            (left-index (left-child index))
+            (right-index (right-child index))
         )
 
-        ;caso solo figlio sinistro
-        (if (and (not (null left)) (null right))
-            (if (> (first node) (first left))
-                (progn
-                    (swap heap-id index (left-child index))
-                    (heapify heap-id (left-child index))
+        (if (or (>= left-index (get-heap-size heap-id))
+                    (>= right-index (get-heap-size heap-id)))
+                NIL
+            
+            ;else
+            (let
+                (
+                    (node (aref (get-actual-heap heap-id) index))
+                    (left (aref (get-actual-heap heap-id) (left-child index)))
+                    (right (aref (get-actual-heap heap-id) (right-child index)))
                 )
-            )
-        )
 
-        ;caso figlio destro minore 
-        (if (and (not (null right)) (not (null left)))
-            (if (and (<= (first node) (first left))
-                    (> (first node) (first right))
-                )
-                (progn
-                    (swap heap-id index (right-child index))
-                    (heapify heap-id (right-child index))
-                )
-            )
-        )
+                ;caso base: il nodo è una foglia
 
-        ;caso figlio sinistro minore
-        (if (and (not (null right))(not (null left)))
-            (if (and (<= (first node) (first right))
-                (> (first node) (first left)))
-                (progn
-                    (swap heap-id index (left-child index))
-                    (heapify heap-id (left-child index))
+                (if (null left)
+                    T
                 )
-            )
-        )
 
-        ; caso entrambi minori
-        (if (and (not (null right)) (not (null left)))
-            (if (and (> (first node) (first left))
-                    (> (first node) (first right)))
-                (if (> (first right) (first left))
-                    (progn
-                        (swap heap-id index (left-child index))
-                        (heapify heap-id (left-child index))
+
+                ;caso solo figlio sinistro
+                (if (and (not (null left)) (null right))
+                    (if (> (first node) (first left))
+                        (progn
+                            (swap heap-id index (left-child index))
+                            (heapify heap-id (left-child index))
+                        )
                     )
-                   ;else
-                    (progn
-                        (swap heap-id index (right-child index))
-                        (heapify heap-id (right-child index))
+                )
+
+                ;caso figlio destro minore 
+                (if (and (not (null right)) (not (null left)))
+                    (if (and (<= (first node) (first left))
+                            (> (first node) (first right))
+                        )
+                        (progn
+                            (swap heap-id index (right-child index))
+                            (heapify heap-id (right-child index))
+                        )
+                    )
+                )
+
+                ;caso figlio sinistro minore
+                (if (and (not (null right))(not (null left)))
+                    (if (and (<= (first node) (first right))
+                        (> (first node) (first left)))
+                        (progn
+                            (swap heap-id index (left-child index))
+                            (heapify heap-id (left-child index))
+                        )
+                    )
+                )
+
+                ; caso entrambi minori
+                (if (and (not (null right)) (not (null left)))
+                    (if (and (> (first node) (first left))
+                            (> (first node) (first right)))
+                        (if (> (first right) (first left))
+                            (progn
+                                (swap heap-id index (left-child index))
+                                (heapify heap-id (left-child index))
+                            )
+                        ;else
+                            (progn
+                                (swap heap-id index (right-child index))
+                                (heapify heap-id (right-child index))
+                            )
+                        )
                     )
                 )
             )

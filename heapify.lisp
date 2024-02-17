@@ -274,6 +274,7 @@
 )
 
 (defun test-1 (heap-id)
+  (new-heap heap-id)
   (heapify-up heap-id 6)
   (print (get-actual-heap heap-id))
   (heapify heap-id 1)

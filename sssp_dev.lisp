@@ -242,38 +242,51 @@
     (gethash (list graph-id vertex-id) *visited*)
 )
 
-(defun sssp-change-previuos (graph-id vertex-id previous-id)
+(defun sssp-change-previous (graph-id vertex-id previous-id)
     (setf (gethash (list graph-id vertex-id) *visited*) previous-id)
     NIL
 )
 
 
 
-(defun sssp-dijkstra (graph-id source)
+(defun sssp-dijkstra (graph-id vertex-id)
 
-    (let ((node (gethash (list 'vertex graph-id source) *vertices*)))
+    (let ((node (gethash (list 'vertex graph-id vertex-id) *vertices*)))
     
         (new-heap 'dijkstra-heap)
-        (heap-insert 'dijkstra-heap (get-) (node))
 
-        (sssp-set-visited graph-id node) 
+        (sssp-set-visited graph-id vertex-id)
+        (sssp-change-dist graph-id vertex-id 0)
+        (heap-insert 'dijkstra-heap 0 vertex-id)
+        
+        ;(heap-print 'dijkstra-heap)
 
-        (dijkstra graph-id node)
+        (dijkstra graph-id vertex-id)
     )
 )
 
-(defun dijkstra (graph-id source)
-    (sssp-set-visited graph-id source)
-    (heap-extract 'dijkstra-heap)
-
+(defun dijkstra (graph-id vertex-id)
+    (sssp-set-visited graph-id vertex-id)
+    ;(heap-extract 'dijkstra-heap)
     (let ((to-explore ()))
         (maphash (lambda (key value)
-                (push (graph-vertex-neighbors graph-id value)
-                    to-explore
+                (format t "key: ~S~%" key)
+                (and 
+                    (equal (first key) graph-id)
+                    (equal (second key) T)
                 )
+                ;assegnamento necessario: se si usa append normalmente 
+                ;to-explore viene distrutta, con push si crea una lista nestata
+                (setf to-explore (append 
+                (graph-vertex-neighbors graph-id (second key)) 
+                to-explore))
+                (format t "value: ~S~%" value)
             )
-        *visited*)
+            *visited*
+        )
+        (format t "to-explore: ~S~%" to-explore)
     )
+
 )
 
 
@@ -445,7 +458,7 @@
 (defun get-costs (graph-id u v)
   (gethash (list graph-id u v) *costs*))
 
-!!! aggiungere hah table (defparameter *costs* (make-hash-table :test #'equal)) !!!
+;;; !!! aggiungere hah table (defparameter *costs* (make-hash-table :test #'equal)) !!!
 
 
 ;;; TEST
@@ -484,4 +497,11 @@
 
   (print (get-actual-heap heap-id))
   T
+)
+
+
+(defun test-3 (graph-id vertex)
+  (test-1 graph-id)
+  (sssp-dijkstra graph-id vertex)
+  
 )
