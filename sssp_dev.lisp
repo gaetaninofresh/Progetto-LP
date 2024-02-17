@@ -172,8 +172,8 @@
             (get-actual-heap heap-id) 
         )
     )
-    ;; chiama heapify sull'ultimo elemento
-    ;(heapify heap-id (- (get-heap-size heap-id) 1))
+    ;; chiama heapify 
+    (heapify-up heap-id (- (get-heap-size heap-id) 1))
 )
 
 (defun heap-extract (heap-id)
@@ -190,11 +190,30 @@
                 (get-actual-heap heap-id) 
             )
         )
-        (heapify heap-id (- (get-heap-size heap-id) 1))
+        ;chiamata heapify
+        (heapify-up heap-id (- (get-heap-size heap-id) 1))
+        (heapify heap-id 0)
+        
+        ;return
         head
     )
 )
 
+(defun modify-key (heap-id new-key old-key value)
+    (let ((index (find-node heap-id old-key value 0)))
+        (if (null index)
+            NIL
+        ;else
+            (progn
+                (setf (aref (get-actual-heap heap-id) index) 
+                (list new-key value))
+                (heapify-up heap-id index)
+                (heapify heap-id 0)
+                T
+            )
+        )
+    )
+)
 
 
 ;;; FUNZIONI AGGIUNTIVE
@@ -224,60 +243,79 @@
 )
 
 (defun heapify (heap-id index)
-    (let 
+    (let
         (
-            (node (aref (get-actual-heap heap-id) index))
-            (left (aref (get-actual-heap heap-id) (left-child index)))
-            (right (aref (get-actual-heap heap-id) (right-child index)))
-        )
-        
-        ;caso base: il nodo è una foglia
-        (if (and (nil left) (nil right))
-            T
+            (left-index (left-child index))
+            (right-index (right-child index))
         )
 
-        ;caso solo figlio sinistro
-        (if (nil right)
-            (if (> (first node) (first left))
+        (if (or (>= left-index (get-heap-size heap-id))
+                    (>= right-index (get-heap-size heap-id)))
+                NIL
+            
+            ;else
+            (let
                 (
-                    (swap heap-id index (left-child index))
-                    (heapify heap-id (left-child index))
+                    (node (aref (get-actual-heap heap-id) index))
+                    (left (aref (get-actual-heap heap-id) (left-child index)))
+                    (right (aref (get-actual-heap heap-id) (right-child index)))
                 )
-            )
-        )
 
-        ;caso figlio destro minore 
-        (if(and(not(nil right))(not(nil left)))
-            (if(and(<= (first node) (first left))(> (first node) (first right)))
-                (
-                    (swap heap-id index (right-child index))
-                    (heapify heap-id (right-child index))
+                ;caso base: il nodo è una foglia
+
+                (if (null left)
+                    T
                 )
-            )
-        )
 
-        ;caso figlio sinistro minore
-        (if(and(not(nil right))(not(nil left)))
-            (if(and(<= (first node) (first right))(> (first node) (first left)))
-                (
-                    (swap heap-id index (left-child index))
-                    (heapify heap-id (left-child index))
-                )
-            )
-        )
 
-        ; caso entrambi minori
-        (if(and(not(nil right))(not(nil left)))
-            (if(and(> (first node) (first left))(> (first node) (first right)))
-                (if(> (first right) (first left))
-                    (
-                        (swap head-id index (left-child index))
-                        (heapify heap-id (left-child index))
+                ;caso solo figlio sinistro
+                (if (and (not (null left)) (null right))
+                    (if (> (first node) (first left))
+                        (progn
+                            (swap heap-id index (left-child index))
+                            (heapify heap-id (left-child index))
+                        )
                     )
-                   ;else
-                    (
-                        (swap head-id index (right-child index))
-                        (heapify heap-id (right-child index))
+                )
+
+                ;caso figlio destro minore 
+                (if (and (not (null right)) (not (null left)))
+                    (if (and (<= (first node) (first left))
+                            (> (first node) (first right))
+                        )
+                        (progn
+                            (swap heap-id index (right-child index))
+                            (heapify heap-id (right-child index))
+                        )
+                    )
+                )
+
+                ;caso figlio sinistro minore
+                (if (and (not (null right))(not (null left)))
+                    (if (and (<= (first node) (first right))
+                        (> (first node) (first left)))
+                        (progn
+                            (swap heap-id index (left-child index))
+                            (heapify heap-id (left-child index))
+                        )
+                    )
+                )
+
+                ; caso entrambi minori
+                (if (and (not (null right)) (not (null left)))
+                    (if (and (> (first node) (first left))
+                            (> (first node) (first right)))
+                        (if (> (first right) (first left))
+                            (progn
+                                (swap heap-id index (left-child index))
+                                (heapify heap-id (left-child index))
+                            )
+                        ;else
+                            (progn
+                                (swap heap-id index (right-child index))
+                                (heapify heap-id (right-child index))
+                            )
+                        )
                     )
                 )
             )
@@ -285,18 +323,34 @@
     )
 )
 
+;; Migliorabile esplorando l'heap 
+(defun find-node (heap-id key value index)
+    (if (> index (get-heap-size heap-id))
+        NIL
+        ;; else
+        (if (and
+                (equal key (first (aref (get-actual-heap heap-id) index))) 
+                (equal value (second (aref (get-actual-heap heap-id) index))) 
+            )
+            index
+
+            ;; else
+            (find-node heap-id key value (+ index 1))
+        )
+    )
+)
 
 (defun heapify-up (heap-id index)
     
     (let (
-            (node (aref (get-actual-heap heapid) index))
-            (parent (aref (get-actual-heap heapid) (get-parent-index index)))
+            (node (aref (get-actual-heap heap-id) index))
+            (parent (aref (get-actual-heap heap-id) (get-parent-index index)))
         )
         ;caso base
         (if (or (= index 0) (>= (first node) (first parent)))
             T
             ;else
-            (
+            (progn
                 (swap heap-id index (get-parent-index index))
                 (heapify-up heap-id (get-parent-index index))
             )
@@ -304,48 +358,6 @@
 
     )
 )
-
-
-(defun find-node (heap-id key value)
-;; controllo se lo heap è vuoto
-  (if (null heap-id)
-        nil
-      ;; prendo il primo nodo
-        (let ((node (first heap-id)))
-          ;; confronto la chiave e valore del nodo con l'input
-            (if (and (equal (node-key node) key)
-                (equal (node-value node) value))
-                node
-                ;; chiamata ricorsiva sul resto dello heap
-                (find-node (rest heap-id) key value)
-            )
-    
-        )    
-    
-    )
-    
-)
-
-(defun modify-key (heap-id new-key old-key value)
-    ;; verifico che l'heap non sia vuoto
-    (if (heap-not-empty heap-id)
-        ;; modifico la vecchia chiave con la nuova
-        (let ((node (find-node heap-id old-key V)))
-            (when node
-                ;; modifico la vecchia chiave con la nuova
-                (setf (node-key node) new-key)
-                ;; chiamo la heapify
-                (heapify heap-id node)
-                T
-            )
-        )
-    )
-)
-
-
-
-
-
 
 
 ;;; TEST
