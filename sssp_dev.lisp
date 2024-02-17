@@ -271,33 +271,35 @@
 
         T
         ;else
+        (progn
+            (sssp-set-visited graph-id vertex-id)
+            ;(heap-extract 'dijkstra-heap)
     
-        (sssp-set-visited graph-id vertex-id)
-        ;(heap-extract 'dijkstra-heap)
-        
-        (let ((to-explore ()))
-            (maphash (lambda (key value)
-                    (format t "key: ~S~%" key)
-                    (and 
-                        (equal (first key) graph-id)
-                        (equal (second key) T)
-                        (null (gethash key *visited*))
+            (let ((to-explore ()))
+                (maphash (lambda (key value)
+                        (format t "key: ~S~%" key)
+                        (and 
+                            (equal (first key) graph-id)
+                            (equal (second key) T)
+                            (null (gethash key *visited*))
+                        )
+                        ; assegnamento necessario: se si usa append 
+                        ; normalmente 
+                        ; to-explore viene distrutta, 
+                        ; con push si crea una lista 
+                        ; nestata
+                        (setf to-explore (append 
+                        (graph-vertex-neighbors graph-id (second key)) 
+                        to-explore))
+                        (format t "value: ~S~%" value)
                     )
-                    ; assegnamento necessario: se si usa append normalmente 
-                    ; to-explore viene distrutta, con push si crea una lista 
-                    ; nestata
-                    (setf to-explore (append 
-                    (graph-vertex-neighbors graph-id (second key)) 
-                    to-explore))
-                    (format t "value: ~S~%" value)
+                    *visited*
                 )
-                *visited*
+                (format t "to-explore: ~S~%" to-explore)
             )
-            (format t "to-explore: ~S~%" to-explore)
+
         )
-
     )
-
 )
 
 
@@ -447,28 +449,42 @@
     )
 )
 
-(defun dijkstra-check-cost (graph-id prev v)
-  ;; distanza tra vertice1 e sorgente
-  (let ((prevCost (sssp-dist graph-id prev))
-        ;; distanza tra vertice2 e sorgente
-        (OldCost (sssp-dist graph-id v))
-        ;; costo arco prev v
-        (newDist (gethash (list graph-id prev v 1) *edges*)))
-      ;;controlla se la distanza corrente è maggiore di (prevCost e newDist)
-      (if (> OldCost (+ prevCost newDist))
-          (progn 
-            ;; aggiorna la distanza
-            (sssp-change-dist graph-id v (+ prevCost newDist))
-            ;; mette prev come vertice precedente
-            (sssp-change-previous graph-id prev v)
-          )
-      )
-  )
+(defun dijkstra-check-cost (graph-id prev-id vertex-id)
+    ;; distanza tra vertice1 e sorgente
+    (let 
+        (
+            (prev-cost (sssp-dist graph-id prev-id))
+            ;; distanza tra vertice2 e sorgente
+            (old-cost (sssp-dist graph-id vertex-id))
+            ;; costo arco prev v
+            (new-dist (get-edge-cost graph-id prev-id vertex-id))
+        )
+        ;;controlla se la distanza corrente è maggiore di (prevCost e newDist)
+        (if (> old-cost (+ prev-cost new-dist))
+            (progn 
+                ;; aggiorna la distanza
+                (sssp-change-dist graph-id vertex-id (+ prev-cost new-dist))
+                ;; mette prev come vertice precedente
+                (sssp-change-previous graph-id prev-id vertex-id)
+            )
+        )
+    )
 )
 
-
-
-;;; !!! aggiungere hah table (defparameter *costs* (make-hash-table :test #'equal)) !!!
+(defun get-edge-cost (graph-id prev-id vertex-id)
+    (let (cost)
+        (maphash (lambda (key value)
+            (and (equal (second key) graph-id)
+                (equal (third key) prev-id)
+                (equal (fourth key) vertex-id)
+            )
+            (setf cost (fourth key))
+            )
+            *vertices*
+        )
+        cost
+    )
+)
 
 
 ;;; TEST
@@ -491,6 +507,8 @@
   (new-edge graph-id 'c 'e 9)
   (new-edge graph-id 'e 'f 1)
   (new-edge graph-id 'b 'f 5)
+
+  (graph-print graph-id)
   T
 )
 
