@@ -244,20 +244,18 @@
 )
 
 (defun sssp-previous (graph-id vertex-id)
-    (gethash (list graph-id vertex-id) *visited*)
+    (gethash (list graph-id vertex-id) *previous*)
 )
 
 (defun sssp-change-previous (graph-id vertex-id previous-id)
-    (setf (gethash (list graph-id vertex-id) *visited*) previous-id)
+    (setf (gethash (list graph-id vertex-id) *previous*) previous-id)
     NIL
 )
 
 
 
 (defun sssp-dijkstra (graph-id vertex-id)
-
-    (let ((node (gethash (list 'vertex graph-id vertex-id) *vertices*)))
-        
+    
         ;per evitare di usare un heap statico
         (heap-delete graph-id)
         (new-heap graph-id)
@@ -272,63 +270,24 @@
         (heap-insert graph-id 0 vertex-id)
         
         (dijkstra graph-id vertex-id)
-    )
+    
 )
 
 (defun dijkstra (graph-id vertex-id)
     
     (if (heap-empty graph-id)
-
         T
         ;else
         (progn
             (sssp-set-visited graph-id vertex-id)
             (heap-extract graph-id)
             
-            #|
-            (let ((to-explore ()))
-                (maphash (lambda (key value)
-                        (and 
-                            (equal (first key) graph-id)
-                            (equal (second key) T)
-                            (null (gethash key *visited*))
-                        )
-                        ; assegnamento necessario: se si usa append 
-                        ; normalmente 
-                        ; to-explore viene distrutta, 
-                        ; con push si crea una lista 
-                        ; nestata
-                        (setf to-explore (append
-                            (list
-                                (second key)  
-                                (graph-vertex-neighbors graph-id (second key)) 
-                            )
-                            to-explore)
-                        )
-                        
-                    )
-                    *visited*
-                )
-                |#
-
             
             (maphash (lambda (key value)
                     (and 
                         (equal (first key) graph-id)
                         (equal (second key) T)
                         (null (gethash key *visited*))
-                    )
-                    ; assegnamento necessario: se si usa append 
-                    ; normalmente 
-                    ; to-explore viene distrutta, 
-                    ; con push si crea una lista 
-                    ; nestata
-                    (setf to-explore (append
-                        (list
-                            (second key)  
-                            (graph-vertex-neighbors graph-id (second key)) 
-                        )
-                        to-explore)
                     )
 
                     (new-costs graph-id (second key) (graph-vertex-neighbors 
@@ -338,17 +297,46 @@
                 *visited*
             )
 
+            (format t "~% visited: ~%")
+            (print-hash *visited*)
+            (format t "~% distances: ~%")
+            (print-hash *distances*)
+            (format t "~% previous: ~%")
+            (print-hash *previous*)
+
+
             ;(dijkstra-update-cost-list graph-id to-explore)
             
             
             ;(sssp-update-heap graph-id to-explore)
             (heap-print graph-id)
             
+            (dijkstra graph-id (second (heap-head graph-id)))
 
         )
     )
 )
 
+;;; FUNZIONI AGGIUNTIVE
+
+
+(defun get-edge-cost (graph-id prev-id vertex-id)
+    (let (cost)
+        (maphash (lambda (key value)
+            (when (and 
+                    (equal (second key) graph-id)
+                    (equal (third key) prev-id)
+                    (equal (fourth key) vertex-id)
+                )
+
+                (setf cost (fifth key))
+            )
+        )
+            *edges*
+        )
+        cost
+    )
+)
 
 
 (defun new-costs (graph-id vertex-id to-explore-list)
@@ -364,19 +352,31 @@
                     (old-dist (gethash (list graph-id neigh-id) *distances*))
                 )
 
-                (if (
-                        ;caso nodo a distanza infinita
-                        (null old-dist)
+                ;caso nodo a distanza infinita
+                (if (null old-dist)
+                    (progn
+                        (sssp-change-dist graph-id neigh-id 
+                            (+ node-dist arc-cost)
+                        )
+                        (sssp-change-previous graph-id neigh-id vertex-id)
+
+                        (dijkstra-heap-insert graph-id neigh-id 
+                            (+ node-dist arc-cost)
+                        )
                     )
-                    
-                    (sssp-change-dist graph-id neigh-id (+ node-dist arc-cost))
-                    (sssp-change-previous graph-id neigh-id vertex-id)
                 ;else
                     ;cammino migliore
                     (if (> old-dist (+ node-dist arc-cost))
-                        (sssp-change-dist graph-id neigh-id 
-                        (+ node-dist arc-cost))
-                        (sssp-change-previous graph-id neigh-id vertex-id)
+                        (progn
+                            (sssp-change-dist graph-id neigh-id 
+                                (+ node-dist arc-cost)
+                            )
+                            (sssp-change-previous graph-id neigh-id vertex-id)
+
+                            (dijkstra-heap-insert graph-id neigh-id 
+                                (+ node-dist arc-cost)
+                            )
+                        )
                     )
                 )
 
@@ -386,8 +386,18 @@
     )
 )
 
+(defun dijkstra-heap-insert (heap-id vertex-id distance)
+    (let (
+            (key (find-node heap-id nil vertex-id 0)) 
+        )  
+        (if (null key)
+            (heap-insert heap-id distance vertex-id)
+            ;else
+            (modify-key heap-id distance key vertex-id)
+        )
+    )
+)
 
-;;; FUNZIONI AGGIUNTIVE
 
 (defun get-parent-index (index)
     (floor (/ index 2))
@@ -497,12 +507,15 @@
 )
 
 ;; Migliorabile esplorando l'heap 
-(defun find-node (heap-id key value index)
+(defun find-node (heap-id key value index &optional (check-key T))
     (if (> index (get-heap-size heap-id))
         NIL
         ;; else
         (if (and
-                (equal key (first (aref (get-actual-heap heap-id) index))) 
+                (or 
+                    (equal key (first (aref (get-actual-heap heap-id) index)))
+                    (not check-key)
+                ) 
                 (equal value (second (aref (get-actual-heap heap-id) index))) 
             )
             index
@@ -532,78 +545,6 @@
     )
 )
 
-(defun sssp-update-heap (heap-id arg-list)
-    (if (null (first arg-list))
-        nil
-        ;else
-
-        (progn
-            (heap-insert heap-id (first arg-list) 
-                (gethash (first arg-list) *distances*)
-            )
-            (sssp-update-heap heap-id (rest arg-list))
-        )
-    )
-)
-;;; incredibilmente efficiente, da migliorare
-(defun dijkstra-update-cost-list (graph-id vertex-id-list)
-    (if (null (first vertex-id-list))
-        NIL
-        ;else
-        (progn
-            (dijkstra-update-cost graph-id (first vertex-id-list))
-            (dijkstra-update-cost-list (graph-id rest(vertex-id-list)))
-        )
-    )
-)
-
-(defun dijkstra-update-cost (graph-id vertex-id)
-    ;; distanza tra vertice1 e sorgente
-    (let* 
-        (
-            (prev-id (gethash (list graph-id vertex-id) *previous*))
-
-            (prev-cost (sssp-dist graph-id prev-id))
-            ;; distanza tra vertice2 e sorgente
-            (old-cost (sssp-dist graph-id vertex-id))
-            ;; costo arco prev v
-            (new-dist (get-edge-cost graph-id prev-id vertex-id))
-        )
-        ;;controlla se la distanza corrente è maggiore di (prevCost e newDist)
-        
-        ;nodo a distanza infinita
-        (if (null prev-id)
-            (sssp-change-dist graph-id vertex-id (+ prev-cost new-dist))
-        )
-        
-        (if (> old-cost (+ prev-cost new-dist))
-            (progn 
-                ;; aggiorna la distanza
-                (sssp-change-dist graph-id vertex-id (+ prev-cost new-dist))
-                ;; mette prev come vertice precedente
-                (sssp-change-previous graph-id prev-id vertex-id)
-            )
-        )
-    )
-)
-
-(defun get-edge-cost (graph-id prev-id vertex-id)
-    (let (cost)
-        (maphash (lambda (key value)
-            (when (and 
-                    (equal (second key) graph-id)
-                    (equal (third key) prev-id)
-                    (equal (fourth key) vertex-id)
-                )
-
-                (setf cost (fifth key))
-            )
-        )
-            *edges*
-        )
-        cost
-    )
-)
 
 
 (defun init-sssp (G Source)
@@ -625,6 +566,15 @@
     (setf (gethash Source *visited*) T)
 )
 
+
+(defun print-hash (hash)
+    (maphash (lambda (key value)
+        
+            (format t "~S -> ~S ~%" key value)
+        )
+        hash
+    )
+)
 
 ;;; TEST
 
