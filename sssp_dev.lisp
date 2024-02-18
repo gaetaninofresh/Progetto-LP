@@ -9,19 +9,21 @@
 
 ;;; is-graph - ritorna il graph-id stesso.
 (defun is-graph (graph-id)
-  (gethash graph-id *graphs*))
+  (gethash graph-id *graphs*)
+)
 
 ;;; new-graph - genera un nuovo grafo e lo inserisce nel data base
 (defun new-graph (graph-id)
   (or (gethash graph-id *graphs*)
       (setf 
        (gethash graph-id *graphs*) 
-       graph-id)))
+       graph-id)
+    )
+)
 
 ;;; delete-graph rimuove l'intero grafo dal sistema 
 (defun delete-graph (graph-id)
-  (remhash graph-id *graphs*)
-  nil)
+    (remhash graph-id *graphs*) nil)
 
 ;;; new-vertex - aggiunge un nuovo vertice vertex-id al grafo graph-id.
 (defun new-vertex (graph-id vertex-id) 
@@ -79,7 +81,7 @@
             (lambda (key neigh)
                 (cond ((and (equal (second neigh) graph-id) 
                             (equal (third neigh) vertex-id))
-                        (push (list 'vertex graph-id (fourth neigh)) 
+                        (push (fourth neigh) 
                             neigh-list)
                         (push key key-list)
                     )
@@ -132,6 +134,8 @@
 (defun get-actual-heap (heap-id)
     (fourth (gethash heap-id *heaps*))
 )
+
+;;; TODO: REMOVE ENTRIES
 
 (defun heap-delete (heap-id)
     (remhash heap-id *heaps*)
@@ -191,9 +195,10 @@
             )
         )
         ;chiamata heapify
-        (heapify-up heap-id (- (get-heap-size heap-id) 1))
-        (heapify heap-id 0)
-        
+        (if (> (get-heap-size heap-id) 0)
+            (heapify-up heap-id (- (get-heap-size heap-id) 1))
+            (heapify heap-id 0)
+        )
         ;return
         head
     )
@@ -252,32 +257,36 @@
 (defun sssp-dijkstra (graph-id vertex-id)
 
     (let ((node (gethash (list 'vertex graph-id vertex-id) *vertices*)))
-    
-        (new-heap 'dijkstra-heap)
+        
+        ;per evitare di usare un heap statico
+        (heap-delete graph-id)
+        (new-heap graph-id)
+
+        ;pulizia hashtable
+        (clrhash *visited*)
+        (clrhash *dist*)
+        (clrhash *previous*)
 
         (sssp-set-visited graph-id vertex-id)
         (sssp-change-dist graph-id vertex-id 0)
-        (heap-insert 'dijkstra-heap 0 vertex-id)
+        (heap-insert graph-id 0 vertex-id)
         
-        ;(heap-print 'dijkstra-heap)
-
         (dijkstra graph-id vertex-id)
     )
 )
 
 (defun dijkstra (graph-id vertex-id)
     
-    (if (heap-empty 'dijkstra-heaps)
+    (if (heap-empty graph-id)
 
         T
         ;else
         (progn
             (sssp-set-visited graph-id vertex-id)
-            ;(heap-extract 'dijkstra-heap)
+            (heap-extract graph-id)
     
             (let ((to-explore ()))
                 (maphash (lambda (key value)
-                        (format t "key: ~S~%" key)
                         (and 
                             (equal (first key) graph-id)
                             (equal (second key) T)
@@ -291,11 +300,19 @@
                         (setf to-explore (append 
                         (graph-vertex-neighbors graph-id (second key)) 
                         to-explore))
-                        (format t "value: ~S~%" value)
+                        
                     )
                     *visited*
                 )
                 (format t "to-explore: ~S~%" to-explore)
+            
+                (dijkstra-update-cost-list graph-id to-explore)
+
+                
+                
+                (sssp-update-heap graph-id to-explore)
+
+                (heap-print graph-id)
             )
 
         )
@@ -449,17 +466,51 @@
     )
 )
 
-(defun dijkstra-check-cost (graph-id prev-id vertex-id)
+(defun sssp-update-heap (heap-id arg-list)
+    (if (null (first arg-list))
+        nil
+        ;else
+
+        (progn
+            (heap-insert heap-id (first arg-list) 
+                (gethash (first arg-list) *distances*)
+            )
+            (sssp-update-heap heap-id (rest arg-list))
+        )
+    )
+)
+;;; incredibilmente efficiente, da migliorare
+(defun dijkstra-update-cost-list (graph-id vertex-id-list)
+    (if (null (first vertex-id-list))
+        NIL
+        ;else
+        (progn
+            (dijkstra-update-cost graph-id (first vertex-id-list))
+            (dijkstra-update-cost-list (graph-id rest(vertex-id-list)))
+        )
+    )
+)
+
+(defun dijkstra-update-cost (graph-id vertex-id)
     ;; distanza tra vertice1 e sorgente
-    (let 
+    (let* 
         (
+            (prev-id (gethash (list graph-id vertex-id) *previous*))
+
             (prev-cost (sssp-dist graph-id prev-id))
             ;; distanza tra vertice2 e sorgente
             (old-cost (sssp-dist graph-id vertex-id))
             ;; costo arco prev v
             (new-dist (get-edge-cost graph-id prev-id vertex-id))
         )
+        (print prev-id)
         ;;controlla se la distanza corrente è maggiore di (prevCost e newDist)
+        
+        ;nodo a distanza infinita
+        (if (null prev-id)
+            ((sssp-change-dist graph-id vertex-id (+ prev-cost new-dist)))
+        )
+        
         (if (> old-cost (+ prev-cost new-dist))
             (progn 
                 ;; aggiorna la distanza
@@ -474,13 +525,16 @@
 (defun get-edge-cost (graph-id prev-id vertex-id)
     (let (cost)
         (maphash (lambda (key value)
-            (and (equal (second key) graph-id)
-                (equal (third key) prev-id)
-                (equal (fourth key) vertex-id)
+            (when (and 
+                    (equal (second key) graph-id)
+                    (equal (third key) prev-id)
+                    (equal (fourth key) vertex-id)
+                )
+
+                (setf cost (fifth key))
             )
-            (setf cost (fourth key))
-            )
-            *vertices*
+        )
+            *edges*
         )
         cost
     )
