@@ -606,6 +606,26 @@
 )
 
 
+(defun init-sssp (G Source)
+  (init-helper (graph-vertices G) Source)
+)
+
+(defun init-helper (vertices Source)
+  ;; controllo se ci sono vertici da vistare
+  (when vertices
+    (let ((V (first vertices)))
+      ;; setto il primo vertice a distanza inf
+      (setf (gethash V *distance*) (expt 61 61))
+      ;; richiamo ricorsivamente sul resto della lista
+      (init-helper (rest vertices) Source)
+    )
+  )
+    ;; imposto la sorgente a visited e distanza 0
+    (setf (gethash Source *distance*) 0)
+    (setf (gethash Source *visited*) T)
+)
+
+
 ;;; TEST
 
 (defun test-1 (graph-id)
