@@ -317,6 +317,22 @@
     )
 )
 
+
+(defun shortest-path (G Source V)
+  ;; se source e V sono uguali ritorno la lista vuota
+  (if (equal Source V)
+      '()
+        (let ((Prev (sssp-previous G V))
+                (W (get-edge-cost G Prev V))
+                ;; calolo il cammino di costo minimo tra source e prev
+                (NewPath (shortest-path G Source Prev))
+                ;; aggiungo il nodo alla lista
+                (append NewPath (list ('edge G Prev V W)))
+            )
+        )   
+    )
+)
+
 ;;; FUNZIONI AGGIUNTIVE
 
 
