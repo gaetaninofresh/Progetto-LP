@@ -295,7 +295,7 @@
                 )
                 *visited*
             )
-
+            #| 
             (format t "~% visited: ~%")
             (print-hash *visited*)
             (format t "~% distances: ~%")
@@ -304,6 +304,7 @@
             (print-hash *previous*)
 
             (heap-print graph-id)
+            |#
             
             (dijkstra graph-id (second (heap-head graph-id)))
 
@@ -311,37 +312,40 @@
     )
 )
 
-#| 
-(defun shortest-path (G Source V)
+
+(defun shortest-pathL (G Source V)
   ;; se source e V sono uguali ritorno la lista vuota
   (if (equal Source V)
       '()
-        (let ((Prev (sssp-previous G V))
-                (W (get-edge-cost G Prev V))
-                ;; calolo il cammino di costo minimo tra source e prev
-                (NewPath (shortest-path G Source Prev))
-                ;; aggiungo il nodo alla lista
-                (append NewPath (list ('edge G Prev V W)))
-            )
-        )   
+    (let ((Prev (sssp-previous G V))
+          (W (get-edge-cost G Prev V))
+          ;; calcolo il cammino di costo minimo tra source e prev
+          (NewPath (shortest-path G Source Prev)))
+      ;; aggiungo il nodo alla lista
+      (append NewPath (list (list 'edge G Prev V W)))
     )
+  )
 )
-|#
+
 
 (defun shortest-path (graph-id source-id vertex-id)
   (let* (
             (prev-id (sssp-previous graph-id vertex-id))
             (distance (get-edge-cost graph-id prev-id vertex-id))
-            (path ())
         ) 
-
-        (if (equal source-id vertex-id)
-            '()
-            ;else
+        (if (null prev-id)
             (progn
-                (append (list 'edge graph-id prev-id vertex-id distance) path)
-                (append (shortest-path graph-id source-id prev-id) path)
-                path
+                (format t "~% No path from ~S to ~S ~%" source-id vertex-id)
+            )
+
+            (if (equal source-id vertex-id)
+                '()
+                ;else
+                (progn
+                    (push (list 'edge graph-id prev-id vertex-id distance) 
+                        (list (shortest-path graph-id source-id vertex-id))
+                    )
+                )
             )
         )
     )
@@ -651,5 +655,6 @@
 (defun test-3 (graph-id vertex)
   (test-1 graph-id)
   (sssp-dijkstra graph-id vertex)
+  (shortest-path 'g 's 'e)
   
 )

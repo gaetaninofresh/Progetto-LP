@@ -312,21 +312,25 @@
     )
 )
 
-#| 
-(defun shortest-path (G Source V)
+
+(defun shortest-pathL (G Source V)
   ;; se source e V sono uguali ritorno la lista vuota
   (if (equal Source V)
       '()
-    (let ((Prev (sssp-previous G V))
-          (W (get-edge-cost G Prev V))
-          ;; calcolo il cammino di costo minimo tra source e prev
-          (NewPath (shortest-path G Source Prev)))
-      ;; aggiungo il nodo alla lista
-      (append NewPath (list (list 'edge G Prev V W)))
+    (let* 
+        (
+            (Prev (sssp-previous G V))
+            (W (get-edge-cost G Prev V))
+            ;; calcolo il cammino di costo minimo tra source e prev
+        )
+        
+        (NewPath (shortest-pathL G Source Prev))
+        ;; aggiungo il nodo alla lista
+        (append NewPath (list (list 'edge G Prev V W)))
     )
   )
 )
-|#
+
 
 (defun shortest-path (graph-id source-id vertex-id)
   (let* (
@@ -655,6 +659,6 @@
 (defun test-3 (graph-id vertex)
   (test-1 graph-id)
   (sssp-dijkstra graph-id vertex)
-  (shortest-path 'g 's 'e)
+  (shortest-pathL 'g 's 'e)
   
 )
