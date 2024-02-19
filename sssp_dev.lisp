@@ -327,7 +327,7 @@
                 ;; calolo il cammino di costo minimo tra source e prev
                 (NewPath (shortest-path G Source Prev))
                 ;; aggiungo il nodo alla lista
-                (append NewPath (list ('edge G Prev V W)))
+                (append NewPath (list (list 'edge G Prev V W)))
             )
         )   
     )
