@@ -234,8 +234,7 @@
 )
 
 (defun sssp-visited (graph-id vertex-id)
-    (null (gethash (list graph-id vertex-id) *visited*))
-    
+    (gethash (list graph-id vertex-id) *visited*)
 )
 
 (defun sssp-set-visited (graph-id vertex-id)
@@ -285,8 +284,7 @@
             (maphash (lambda (key value)
                     (and 
                         (equal (first key) graph-id)
-                        (equal (second key) T)
-                        (null (gethash key *visited*))
+                        (equal value T)
                     )
 
                     (dijkstra-update graph-id (second key) 
@@ -295,7 +293,7 @@
                 )
                 *visited*
             )
-            #| 
+            
             (format t "~% visited: ~%")
             (print-hash *visited*)
             (format t "~% distances: ~%")
@@ -304,7 +302,7 @@
             (print-hash *previous*)
 
             (heap-print graph-id)
-            |#
+            
             
             (dijkstra graph-id (second (heap-head graph-id)))
 
@@ -583,28 +581,6 @@
 
     )
 )
-
-
-
-(defun init-sssp (G Source)
-  (init-helper (graph-vertices G) Source)
-)
-
-(defun init-helper (vertices Source)
-  ;; controllo se ci sono vertici da vistare
-  (when vertices
-    (let ((V (first vertices)))
-      ;; setto il primo vertice a distanza inf
-      (setf (gethash V *distance*) (expt 61 61))
-      ;; richiamo ricorsivamente sul resto della lista
-      (init-helper (rest vertices) Source)
-    )
-  )
-    ;; imposto la sorgente a visited e distanza 0
-    (setf (gethash Source *distance*) 0)
-    (setf (gethash Source *visited*) T)
-)
-
 
 (defun print-hash (hash)
     (maphash (lambda (key value)
