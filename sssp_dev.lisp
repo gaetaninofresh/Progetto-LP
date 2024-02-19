@@ -243,7 +243,7 @@
 )
 
 (defun sssp-previous (graph-id vertex-id)
-    (gethash (list graph-id vertex-id) *previous*)
+    (gethash (list graph-id vertex-id) *previous*)    
 )
 
 (defun sssp-change-previous (graph-id vertex-id previous-id)
@@ -254,20 +254,21 @@
 
 (defun sssp-dijkstra (graph-id vertex-id)
     
-        ;per evitare di usare un heap statico
-        (heap-delete graph-id)
-        (new-heap graph-id)
-
-        ;pulizia hashtable
-        (clrhash *visited*)
-        (clrhash *distances*)
-        (clrhash *previous*)
-
-        (sssp-set-visited graph-id vertex-id)
-        (sssp-change-dist graph-id vertex-id 0)
-        (heap-insert graph-id 0 vertex-id)
-        
-        (dijkstra graph-id vertex-id)
+    ;per evitare di usare un heap statico
+    (heap-delete graph-id)
+    (new-heap graph-id)
+    
+    ;pulizia hashtable
+    (clrhash *visited*)
+    (clrhash *distances*)
+    (clrhash *previous*)
+    
+    (sssp-set-visited graph-id vertex-id)
+    (sssp-change-dist graph-id vertex-id 0)
+    (heap-insert graph-id 0 vertex-id)
+    
+    (dijkstra graph-id vertex-id)
+    (heap-delete graph-id)
     
 )
 
@@ -293,7 +294,7 @@
                 )
                 *visited*
             )
-            
+            #| 
             (format t "~% visited: ~%")
             (print-hash *visited*)
             (format t "~% distances: ~%")
@@ -302,6 +303,7 @@
             (print-hash *previous*)
 
             (heap-print graph-id)
+            |#
             
             
             (dijkstra graph-id (second (heap-head graph-id)))
@@ -311,24 +313,24 @@
 )
 
 
-(defun shortest-pathL (G Source V)
-  ;; se source e V sono uguali ritorno la lista vuota
-  (if (equal Source V)
-      '()
-    (let* 
+(defun sssp-shortest-path-helper (graph-id source vertex-id path)
+  (let* 
         (
-            (Prev (sssp-previous G V))
-            (W (get-edge-cost G Prev V))
-            ;; calcolo il cammino di costo minimo tra source e prev
+            (prev-id (sssp-previous graph-id vertex-id))
+            (cost (get-edge-cost graph-id prev-id vertex-id)) 
         )
         
-        (NewPath (shortest-pathL G Source Prev))
-        ;; aggiungo il nodo alla lista
-        (append NewPath (list (list 'edge G Prev V W)))
-    )
-  )
-)
+        (if (equal source vertex-id)            
+            path
 
+            ;else
+            (progn 
+                (push (list 'edge graph-id prev-id vertex-id cost) path)
+                (sssp-shortest-path-helper graph-id source prev-id path)
+            )
+        )
+    )
+)
 
 (defun shortest-path (graph-id source-id vertex-id)
   (let* (
@@ -352,7 +354,6 @@
         )
     )
 )
-
 
 ;;; FUNZIONI AGGIUNTIVE
 
@@ -632,9 +633,24 @@
 )
 
 
-(defun test-3 (graph-id vertex)
+(defun test-3 (graph-id source vertex)
   (test-1 graph-id)
-  (sssp-dijkstra graph-id vertex)
-  (shortest-pathL 'g 's 'e)
+  (sssp-dijkstra graph-id source)
+  (sssp-shortest-path-helper graph-id source vertex ())
+  
+)
+
+(defun test-4 (graph-id source vertex)
+    (new-graph graph-id)
+    (new-vertex graph-id 's)
+    (new-vertex graph-id 'a)
+    (new-vertex graph-id 'b)
+    (new-vertex graph-id 'c)
+    (new-edge graph-id 's 'a )
+    (new-edge graph-id 's 'b )
+    (new-edge graph-id 'a 'c )
+    (new-edge graph-id 'b 's )
+    (sssp-dijkstra graph-id source)
+    (sssp-shortest-path-helper graph-id source vertex ())
   
 )
