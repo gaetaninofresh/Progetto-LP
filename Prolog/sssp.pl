@@ -270,10 +270,11 @@ dijkstra_sssp(G, Source) :-
     nonvar(Source),
     init_sssp(G, Source),
 
-    new_heap(h),
+    %per non usare un nome di heap statico
+    new_heap(G),
     
-    insert(h, 0, Source),
-    dijkstra(G, Source, h).
+    insert(G, 0, Source),
+    dijkstra(G, Source, G).
 
 
 shortest_path(G, Source, Source, []) :- !.
