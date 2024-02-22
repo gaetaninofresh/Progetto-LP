@@ -6,7 +6,7 @@ Luca Giandomenico, matricola 900162
 
 **** INTERFACCIA PROLOG PER LA MANIPOLAZIONE DEI GRAFI ****
 
-Ogni grafico è definito da una serie di fatti salvati nel dataset:
+Ogni grafo è definito da una serie di fatti salvati nel dataset:
 
 graph(G) -> rappresentazione nella base dati del grafo G
 
