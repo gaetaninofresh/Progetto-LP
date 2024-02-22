@@ -4,7 +4,7 @@ Luca Giandomenico, matricola 900162
 
 
 
-**** INTERFACCIA PROLOG PER LA MANIPOLAZIONE DEI DATI ****
+**** INTERFACCIA PROLOG PER LA MANIPOLAZIONE DEI GRAFI ****
 
 Ogni grafico è definito da una serie di fatti salvati nel dataset:
 
