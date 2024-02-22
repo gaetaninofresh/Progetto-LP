@@ -221,8 +221,14 @@ set_visited(G, V) :-
     retractall(visited(G, V)),
     assert(visited(G, V)).
 
+
+
+
+%versione vertex(g, v)
 init_sssp(G, Source) :-
     
+    \+ atom(Source),
+
     retractall(visited(G, V)),
     retractall(previous(G, V, _)),
     
@@ -232,8 +238,20 @@ init_sssp(G, Source) :-
     change_distance(G, Source, 0),
     set_visited(G, Source).
 
+%versione nome
+init_sssp(G, Source) :-
+    
+    vertex(G, Source),
 
-  
+    retractall(visited(G, V)),
+    retractall(previous(G, V, _)),
+    
+    forall(vertex(G, V),
+        change_distance(G, V, inf)
+    ),
+    change_distance(G, Source, 0),
+    set_visited(G, Source).
+
 dijkstra(G, Source, Heap) :-
     set_visited(G, Source),
     extract(Heap, _, _),
@@ -264,7 +282,6 @@ dijkstra(G, Source, Heap) :-
         ),
         (
             dijkstra_check_cost(G, Node, Exp, NewDist),
-            write(NewDist),
             dijkstra_heap_insert(H, NewDist, Node)
         )
     ),
@@ -282,7 +299,7 @@ dijkstra_sssp(G, Source) :-
     new_heap(heap_dijkstra_sssp),
     
     insert(heap_dijkstra_sssp, 0, Source),
-    dijkstra(G, Source, heap_dijkstra_sssp).
+    dijkstra(G, Source, heap_dijkstra_sssp), !.
 
 
 shortest_path(G, Source, Source, []) :- !.
@@ -405,20 +422,6 @@ heapify_up(H, Node) :-
     heapify_up(H, Parent), !.
     
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 % scambia i nodi nell'heap H con indice I e IP 
 swap(H, I, I) :- heap(H, _).
 
@@ -466,19 +469,7 @@ right_child(Pi, I) :-
 
 % TEST
 :- initialization (
-    (
-        new_heap(h),
-        insert(h, 4, a),
-        insert(h, 2, b),
-        insert(h, 7, c),
-        insert(h, 9, d),
-        insert(h, 3, e),
-        insert(h, 5, f),
-        insert(h, 1, g),
-        %insert(h, 5, i),
-        list_heap(h),
-
-        
+    (       
         new_graph(g),
         new_vertex(g, a),
         new_vertex(g, b),
@@ -504,7 +495,122 @@ right_child(Pi, I) :-
         
         new_edge(g, vertex(g, c), vertex(g, h), 1),
         
-        list_edges(g)
+        list_edges(g),
+
+
+        new_graph(g1),
+        new_vertex(g1, a),
+        new_vertex(g1, b),
+        new_vertex(g1, c),
+        new_vertex(g1, d),
+        new_vertex(g1, e),
+        new_vertex(g1, f),
+        new_vertex(g1, h),
         
+        new_edge(g1, a, b, 3),
+        new_edge(g1, a, e, 11),
+        new_edge(g1, a, d, 4),
+        new_edge(g1, b, c, 5),
+        new_edge(g1, d, c, 7),
+        new_edge(g1, e, d, 6),
+        new_edge(g1, a, f, 3),
+        new_edge(g1, c, h, 1),
+        
+        list_edges(g1),
+
+        
+        new_graph(big),
+
+        new_vertex(big, a),
+        new_vertex(big, b),
+        new_vertex(big, c),
+        new_vertex(big, d),
+        new_vertex(big, e),
+        new_vertex(big, f),
+        new_vertex(big, h),
+        new_vertex(big, i),
+        new_vertex(big, j),
+        new_vertex(big, k),
+        new_vertex(big, l),
+        new_vertex(big, m),
+        new_vertex(big, n),
+        new_vertex(big, o),
+        new_vertex(big, p),
+        new_vertex(big, q),
+        new_vertex(big, r),
+        new_vertex(big, s),
+        new_vertex(big, t),
+        new_vertex(big, u),
+        new_vertex(big, v),
+        new_vertex(big, w),
+        new_vertex(big, x),
+        new_vertex(big, y),
+        new_vertex(big, z),
+        new_vertex(big, aa),
+        new_vertex(big, bb),
+        new_vertex(big, cc),
+        new_vertex(big, dd),
+        new_vertex(big, ee),
+        new_vertex(big, ff),
+        new_vertex(big, gg),
+        new_vertex(big, hh),
+        new_vertex(big, ii),
+        new_vertex(big, jj),
+        new_vertex(big, kk),
+        new_vertex(big, ll),
+        new_vertex(big, mm),
+        new_vertex(big, nn),
+        new_vertex(big, oo),
+        new_vertex(big, pp),
+        new_vertex(big, qq),
+        new_vertex(big, rr),
+        new_vertex(big, ss),
+        new_vertex(big, tt),
+        new_vertex(big, uu),
+        new_vertex(big, vv),
+        new_vertex(big, ww),
+        new_vertex(big, xx),
+        new_vertex(big, yy),
+        new_vertex(big, zz),
+        new_edge(big, vertex(big, a), vertex(big, b), 7),
+        new_edge(big, vertex(big, a), vertex(big, e), 29),
+        new_edge(big, vertex(big, a), vertex(big, d), 13),
+        new_edge(big, vertex(big, b), vertex(big, c), 45),
+        new_edge(big, vertex(big, d), vertex(big, c), 62),
+        new_edge(big, vertex(big, e), vertex(big, d), 18),
+        new_edge(big, vertex(big, a), vertex(big, f), 9),
+        new_edge(big, vertex(big, c), vertex(big, h), 37),
+        new_edge(big, vertex(big, i), vertex(big, j), 52),
+        new_edge(big, vertex(big, j), vertex(big, k), 31),
+        new_edge(big, vertex(big, k), vertex(big, l), 49),
+        new_edge(big, vertex(big, l), vertex(big, m), 16),
+        new_edge(big, vertex(big, m), vertex(big, n), 41),
+        new_edge(big, vertex(big, n), vertex(big, o), 56),
+        new_edge(big, vertex(big, o), vertex(big, p), 23),
+        new_edge(big, vertex(big, p), vertex(big, q), 37),
+        new_edge(big, vertex(big, q), vertex(big, r), 28),
+        new_edge(big, vertex(big, r), vertex(big, s), 19),
+        new_edge(big, vertex(big, s), vertex(big, t), 14),
+        new_edge(big, vertex(big, t), vertex(big, u), 11),
+        new_edge(big, vertex(big, u), vertex(big, v), 8),
+        new_edge(big, vertex(big, v), vertex(big, w), 5),
+        new_edge(big, vertex(big, w), vertex(big, x), 32),
+        new_edge(big, vertex(big, x), vertex(big, y), 27),
+        new_edge(big, vertex(big, y), vertex(big, z), 20),
+        new_edge(big, vertex(big, aa), vertex(big, bb), 46),
+        new_edge(big, vertex(big, cc), vertex(big, dd), 54),
+        new_edge(big, vertex(big, ee), vertex(big, ff), 63),
+        new_edge(big, vertex(big, gg), vertex(big, hh), 72),
+        new_edge(big, vertex(big, ii), vertex(big, jj), 81),
+        new_edge(big, vertex(big, kk), vertex(big, ll), 90),
+        new_edge(big, vertex(big, mm), vertex(big, nn), 2),
+        new_edge(big, vertex(big, oo), vertex(big, pp), 15),
+        new_edge(big, vertex(big, qq), vertex(big, rr), 35),
+        new_edge(big, vertex(big, ss), vertex(big, tt), 47),
+        new_edge(big, vertex(big, uu), vertex(big, vv), 60),
+        new_edge(big, vertex(big, ww), vertex(big, xx), 73),
+        new_edge(big, vertex(big, yy), vertex(big, zz), 88), 
+
+        list_edges(big)
     )
 ).

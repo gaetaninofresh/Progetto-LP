@@ -23,7 +23,31 @@
 
 ;;; delete-graph rimuove l'intero grafo dal sistema 
 (defun delete-graph (graph-id)
-    (remhash graph-id *graphs*) nil)
+    (remhash graph-id *graphs*) 
+    
+    ;rimuoviamo i vertici
+    (maphash (lambda (key value)
+            (cond (
+                    (equal (second key) graph-id)
+                    (remhash key *vertices*)
+                )
+            )
+        )
+        *vertices*
+    )
+
+    ;rimuoviamo gli edge
+    (maphash 
+        (lambda (key edge)
+            (cond ((equal (second edge) graph-id)
+                    (remhash key *edges*)
+                )
+            )
+        )
+        *edges*
+    )   
+    
+)
 
 ;;; new-vertex - aggiunge un nuovo vertice vertex-id al grafo graph-id.
 (defun new-vertex (graph-id vertex-id) 
