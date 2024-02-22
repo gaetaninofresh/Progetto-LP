@@ -4,16 +4,68 @@ Luca Giandomenico, matricola 900162
 
 
 
-**** INTERFACCIA PROLOG PER LA MANIPOLAZIONE DEI DATI ****
+**** INTERFACCIA PROLOG PER LA MANIPOLAZIONE DEI GRAFI ****
 
-Ogni grafico è definito da una serie di fatti salvati nel dataset:
+Ogni grafo è definito da una serie di fatti salvati nel dataset:
 
-graph(G) -> rappresentazione nella base dati del grafo G
+:- new_graph(G).
+Questo predicato inserisce un nuovo grafo nella base-dati Prolog. 
 
-vertex(G, V) -> rappresentazione nella base dati del vertice V del grafo G
 
-arc(G, V, U, Weight) -> rappresentazione nella base dati dell'arco tra i
-     vertici V e U
+:- delete_graph(G).
+Rimuove tutto il grafo (vertici e archi inclusi) dalla base-dati Prolog.
+
+
+:- new_vertex(G, V).
+Aggiunge il vertice V nella base-dati Prolog. N.B. si richiede che il predicato
+che rappresenta i vertici, da aggiungere alla base-dati Prolog, sia 
+vertex(G, V). 
+
+
+:- vertices (G, Vs).
+Questo predicato è vero quando Vs è una lista contenente tutti i vertici di G.
+Nell'implementazione di questo predicato abbiamo dovuto aggiungere il predicato 
+abolish/1 in quanto vertices/2 esisteva già nella libreria ugraph di Prolog, 
+creando notevoli problemi. 
+
+
+:- list_vertices(G).
+Questo predicato stampa alla console dell’interprete Prolog una lista dei 
+vertici del grafo G (usate listing/1).
+
+
+:- new_edge(G, U, V, Weight).
+Aggiunge un arco del grafo G alla base dati Prolog. N.B. è richiesto che il 
+predicato che rappresenta gli archi, da aggiungere alla base-dati Prolog, 
+sia arc(G, U, V, Weight). Per comodità potete anche costruire una versione 
+new_arc/3 così definita: new_arc(G, U, V) :- new_arc(G, U, V, 1).
+
+
+:- arcs(G, Es).
+Questo predicato è vero quando Es è una lista di tutti gli archi presenti in G.
+
+
+:- neighbors(G, V, Ns).
+Questo predicato è vero quando V è un vertice di G e Ns è una lista contenente
+gli archi, arc(G, V, N, W) e arc(G, N, V, W), che portano ai vertici N
+immediatamente raggiungibili da V .
+
+
+:- list_arcs(G).
+Questo predicato stampa alla console dell’interprete Prolog una lista degli 
+archi del grafo G (è il simmetrico di list_vertices/1).
+
+
+:- list_graph(G).
+Questo predicato stampa alla console dell’interprete Prolog una lista dei 
+vertici e degli archi del grafo G.
+
+
+:- vertex_neighbors(G, V, VNs).
+Questo predicato controlla se G è un grafo e se V è un vertice di G, inserisce
+un una lista tutti i vertici "vicini" a V, e poi da questa lista rimuove i 
+vertici già visitati 
+(quindi con distanza già calcolata e minima dalla sorgente).
 
 
 
