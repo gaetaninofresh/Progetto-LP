@@ -80,10 +80,12 @@ Questa funzione stampa sulla console lo stato interno dello heap heap-id.
 
 **** SSSP IN COMMON LISP ****
 
-(sssp-dist graph-id vertex-id) -> d 
+(sssp-dist graph-id vertex-id) -> d/NIL 
 Questa funzione, dato un vertex-id di un grafo graph-id ritorna, durante e 
 dopo l’esecuzione dell’algoritmo di Dijkstra, la distanza minima d del vertice 
-vertex-id dalla “sorgente”.
+vertex-id dalla “sorgente”. Abbiamo fatto la scelta di non inserire il costo 
+infinito nell'hashtable durante l'inizializzazione e usare il valore di ritorno
+NIL per nodi a distanza infinita.
 
 
 (sssp-visited graph-id vertex-id) -> boolean 
